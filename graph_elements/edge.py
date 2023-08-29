@@ -17,20 +17,23 @@ class Edge():
     def get_distance(self) -> float:
         return self.distance
     
-    def __eq__(self, otherEdge: Edge) -> bool:
+    def __eq__(self, otherEdge: "Edge") -> bool:
         return self.fromNode == otherEdge.fromNode and self.toNode == otherEdge.toNode
     
-    def __ne__(self, otherEdge: Edge) -> bool:
+    def __ne__(self, otherEdge: "Edge") -> bool:
         return self.fromNode != otherEdge.fromNode and self.toNode != otherEdge.toNode
     
-    def __lt__(self, otherEdge: Edge) -> bool:
+    def __lt__(self, otherEdge: "Edge") -> bool:
         return self.distance < otherEdge.distance
     
-    def __le__(self, otherEdge: Edge) -> bool:
+    def __le__(self, otherEdge: "Edge") -> bool:
         return self.distance <= otherEdge.distance
     
-    def __gt__(self, otherEdge: Edge) -> bool:
+    def __gt__(self, otherEdge: "Edge") -> bool:
         return self.distance > otherEdge.distance
     
-    def __ge__(self, otherEdge: Edge) -> bool:
+    def __ge__(self, otherEdge: "Edge") -> bool:
         return self.distance >= otherEdge.distance
+    
+    def __hash__(self) -> int:
+        return hash(self.id)
