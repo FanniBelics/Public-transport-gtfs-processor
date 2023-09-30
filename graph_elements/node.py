@@ -7,10 +7,11 @@ class Node():
     parental_node = set()
 
     def __init__(self, id, name, lon, lat):
-        self.id = id
+        self.gtfs_id = id
         self.name = name
         self.longitude = lon
         self.latitude = lat
+        self.aliases = list() #There happen to be more ids for the same stop
 
     def __str__(self) -> str:
         return "{0}, {1}".format(self.id, self.name)
@@ -33,6 +34,9 @@ class Node():
     
     def setParentalNode(self,parentNode: "Node"):
         self.parental_node.add(parentNode)
+        
+    def addAlias(self, id) -> None:
+        self.aliases.append(id)
         
 
 
