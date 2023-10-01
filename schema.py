@@ -16,18 +16,24 @@ node_schema = {
                 "bsonType" : "double",
                 "description" : "Longitude element of the stop and is required",
                 "minimum": -180.0,
-                "maximmum": 180.0
+                "maximum": 180.0
             },
             "latitude" : {
                 "bsonType" : "double",
                 "description" : "Latitude of given stop and is required",
                 "minimum" : -90.0,
-                "maxiumum" : 90.0
+                "maximum" : 90.0
             },
             "aliases" : {
                 "bsonType" : ["int"],
                 "description" : "Other ids for the same node, if exists" 
             }
         }
+    }
+}
+
+edge_schema = {
+    "$jsonSchema" : {
+        
     }
 }
