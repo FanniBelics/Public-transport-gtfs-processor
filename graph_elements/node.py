@@ -6,15 +6,16 @@ class Node():
     
     parental_node = set()
 
-    def __init__(self, id, name, lon, lat):
+    def __init__(self, id, name, desc, lon, lat):
         self.gtfs_id = id
         self.name = name
+        self.description = desc
         self.longitude = lon
         self.latitude = lat
         self.aliases = list() #There happen to be more ids for the same stop
 
     def __str__(self) -> str:
-        return "{0}, {1}".format(self.id, self.name)
+        return "{0}, {1}, {2}, {3}".format(self.gtfs_id, self.name, self.latitude, self.longitude)
 
     def __eq__(self, otherNode: "Node") -> bool:
         return self.longitude == otherNode.longitude and self.latitude == otherNode.latitude
@@ -26,7 +27,7 @@ class Node():
         return self.parental_node.size()
     
     def __hash__(self) -> int:
-        return hash(self.id)
+        return hash(self.gtfs_id)
     
     def calculate_dist(self, otherNode: "Node") -> float:
         return math.acos(math.sin(self.latitude) * math.sin(otherNode.latitude) + math.cos(self.latitude)*math.cos(otherNode.latitude) 

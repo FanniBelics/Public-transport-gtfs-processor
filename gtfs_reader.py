@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from pymongo import MongoClient as mongo
 import os
 from graph_elements.node import Node
+import database_management.database_functions as database_functions
 from dotenv import load_dotenv, find_dotenv
 import os
 import csv
@@ -16,13 +16,19 @@ full_path = os.path.join(absolute_path, gtfs_path)
 #with open (full_path + "/agency.txt", encoding="utf-8") as ageny_txt:
 #    print(ageny_txt.read())
 
-def read_nodes() -> set(Node):
+def existing_location(nodeCandidate: Node, nodesList: list[Node]) -> bool:
+    for node in nodesList:
+        if node.gtfs_id != nodeCandidate.gtfs_id and node == nodeCandidate:
+            return True
+        return False
+
+def read_nodes():
     with open (full_path + "/stops.txt", encoding="utf-8") as stops_txt:
-        nodes = set()
+        nodes = []
         for stop in csv.reader(stops_txt):
-            if stop[0] != "id":
+            if stop[0] != "stop_id":
+                newNode = Node(stop[0],stop[1],stop[3],stop[7],stop[6])
+                database_functions.upload_node_to_database(newNode)
                 
-                newNode = Node(stop[0],stop[1],stop[7],stop[6])
-                nodes.add(newNode)
-                print(newNode)
-                
+
+read_nodes()
