@@ -1,6 +1,6 @@
 from pymongo import MongoClient
 from dotenv import load_dotenv, find_dotenv
-from schema import node_schema
+from schema import node_schema, edge_schema
 import os
 import sys
 
@@ -18,10 +18,18 @@ client = MongoClient(connection_string)
 
 database = client[DICTIONARY]
 try:
-    coll = database.create_collection(NODES_COLLECTION)
+    nodesCollection = database.create_collection(NODES_COLLECTION)
 except Exception:
     print("Collection already exists")
     coll = database[NODES_COLLECTION]
 finally:
     database.command("collMod",NODES_COLLECTION, validator = node_schema)
+    
+try:
+    edgesCollection = database.create_collection(EDGES_COLLECTION)
+except Exception:
+    print("Collection already exists")
+    coll = database[EDGES_COLLECTION]
+finally:
+    database.command("collMod",EDGES_COLLECTION, validator = edge_schema)
     
