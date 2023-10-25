@@ -37,7 +37,11 @@ node_schema = {
                 "description" : "The parental node of the current stop"
             },
             "children" : {
-                "bsonType" : "[int]",
+                "bsonType" : "array",
+                "uniqueItems": True,
+                "items":{
+                    "bsonType" : "int"
+                },
                 "description" : "The children of the current stop"
             }
         }
