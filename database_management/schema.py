@@ -2,7 +2,7 @@ node_schema = {
     "$jsonSchema" : {
         "bsonType" : "object",
         "title" : "Schema for Node object validation",
-        "required" : ["gtfs-id", "name", "longitude", "latitude"],
+        "required" : ["gtfs-id", "name", "short-name","longitude", "latitude"],
         "properties" : {
             "gtfs-id" : {
                 "bsonType" : "int",
@@ -10,7 +10,11 @@ node_schema = {
              },
             "name" : {
                 "bsonType" : "string",
-                "description" : "Name of given stop and is required"
+                "description" : "Full name of given stop and is required"
+            },
+            "short-name":{
+                "bsonType" : "string",
+                "description" : "Short name of given stop and is required"
             },
             "description":{
                 "bsonType" : "string",
@@ -27,6 +31,14 @@ node_schema = {
                 "description" : "Latitude of given stop and is required",
                 "minimum" : -90.0,
                 "maximum" : 90.0
+            },
+            "parental-node" : {
+                "bsonType" : "int",
+                "description" : "The parental node of the current stop"
+            },
+            "children" : {
+                "bsonType" : "[int]",
+                "description" : "The children of the current stop"
             }
         }
     }
