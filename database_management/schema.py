@@ -42,7 +42,7 @@ node_schema = {
                 "items":{
                     "bsonType" : "int"
                 },
-                "description" : "The children of the current stop"
+                "description" : "The children of the current stop, identified by the their gtfs-id"
             }
         }
     }

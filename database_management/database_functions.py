@@ -78,10 +78,10 @@ def add_parental_node_to_node(node: Node, parent: int):
     except Exception as e:
         print(e)
     
-def add_child_to_node(node: Node, child: int): 
+def add_child_to_node(node: int, child: int): 
     try:
-        database[NODES_COLLECTION].update_one({"gtfs-id" : int(node.gtfs_id)},
-                                              {"$push" : {"children" : child}})
+        database[NODES_COLLECTION].update_one({"gtfs-id" : int(node)},
+                                              {"$push" : {"children" : int(child)}})
     except Exception as e:
         print(e)
 

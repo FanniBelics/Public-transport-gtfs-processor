@@ -11,8 +11,8 @@ class Node():
         self.description = desc
         self.longitude = lon
         self.latitude = lat
-        self.parental_node 
-        self.children = set()
+        self.parental_node = None
+        self.children = []
 
     def __str__(self) -> str:
         return "{0}, {1}, {2}, {3}".format(self.gtfs_id, self.name, self.latitude, self.longitude)
