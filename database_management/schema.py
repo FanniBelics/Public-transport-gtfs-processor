@@ -37,12 +37,20 @@ node_schema = {
                 "description" : "The parental node of the current stop"
             },
             "children" : {
-                "bsonType" : "array",
+                "bsonType" : "array", 
                 "uniqueItems": True,
-                "items":{
+                "items" : {
                     "bsonType" : "int"
                 },
                 "description" : "The children of the current stop, identified by the their gtfs-id"
+            },
+            "routes" : {
+                "bsonType" : "array",
+                "uniqueItems" : True,
+                "items" :  {
+                    "bsonType" : "int"
+                },
+                "description" : "All the routes, that reaches the current stop"
             }
         }
     }
@@ -68,9 +76,24 @@ edge_schema = {
             },
             "distance": {
                 "bsonType" : "double",
-                "description" : "The distane between nodes defined in fromNodeId and toNodeId",
+                "description" : "The distane between nodes defined in fromNodeId and toNodeId, in meters",
                 "minimum" : 0.0
-            } 
+            },
+            "travelling-time-mins" : {
+                "bsonType" : "int",
+                "description" : "Travelling time in minutes, without seconds",
+                "minimum" : 0
+            },
+            "travelling-time-secs" : {
+                "bsonType" : "int",
+                "description" : "Travelling time in seconds, without minutes",
+                "minimum" : 0,
+                "maximum" : 60
+            }
         }
     }
+}
+
+route_schema = {
+    
 }
