@@ -95,5 +95,47 @@ edge_schema = {
 }
 
 route_schema = {
-    
+    "$jsonSchema" : {
+        "bsonType" : "object",
+        "title": "Schema for routes schema validation",
+        "required" : ["route_id", "agency-id", "route-type", "route-short-name", "route-description"],
+        "properties" : {
+            "route-id" : {
+                "bsonType" : "int",
+                "description" : "Original route_id given from GTFS files"
+            },
+            "agency-id" : {
+                "bsonType" : "int",
+                "description" : "Identifies the agency, the route belongs to"
+            },
+            "route-type" : {
+                "bsonType" : "int",
+                "description" : "Identifies the mean of the transportation",
+                "enum" : [0, 1, 2, 3, 4, 5, 6, 7, 11, 12]
+            },
+            "route-type-as-text" : {
+                "bsonType" : "string",
+                "description" : "Identifies the name of mean of transportation, default language EN"
+            },
+            "route-short-name" : {
+                "bsonType" : "string",
+                "description" : "Short name of the route"
+            },
+            "route-long-name" : {
+                "bsonType" : "string",
+                "description" : "Full name of the route, if none same as the short name"
+            },
+            "route-description" : {
+                "bsonType" : "string",
+                "description" : "Description of the route"
+            },
+            "stops-reached" : {
+                "bsonType" : "array",
+                "items": {
+                    "bsonType" : "int"
+                },
+                "description" : "Array of the stops, the specified route touches"
+            }
+        }
+    }
 }
