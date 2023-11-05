@@ -98,20 +98,20 @@ route_schema = {
     "$jsonSchema" : {
         "bsonType" : "object",
         "title": "Schema for routes schema validation",
-        "required" : ["route_id", "agency-id", "route-type", "route-short-name", "route-description"],
+        "required" : ["route-id", "agency-id", "route-type", "route-short-name", "route-description"],
         "properties" : {
             "route-id" : {
                 "bsonType" : "int",
                 "description" : "Original route_id given from GTFS files"
             },
             "agency-id" : {
-                "bsonType" : "int",
+                "bsonType" : "string",
                 "description" : "Identifies the agency, the route belongs to"
             },
             "route-type" : {
                 "bsonType" : "int",
                 "description" : "Identifies the mean of the transportation",
-                "enum" : [0, 1, 2, 3, 4, 5, 6, 7, 11, 12]
+                "enum" : [0, 1, 2, 3, 4, 5, 6, 7, 11, 12, 800]
             },
             "route-type-as-text" : {
                 "bsonType" : "string",

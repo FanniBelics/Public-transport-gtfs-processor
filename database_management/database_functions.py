@@ -5,12 +5,14 @@ import os,sys, path
 root_folder = os.path.abspath(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(root_folder)
 from graph_elements.node import Node
+from graph_elements.route import Route
 
 load_dotenv(find_dotenv())
 
 PASSWORD = os.environ.get("MONGODB_PSW")
 NODES_COLLECTION = str(os.environ.get("COLLECTION_NODE_NAME"))
 EDGES_COLLECTION = os.environ.get("COLLECTION_EDGE_NAME")
+ROUTES_COLLECTION = os.environ.get("COLLECTION_ROUTES_NAME")
 DICTIONARY = os.environ.get("READ_DICTIONARY").lower()
 
 
@@ -20,49 +22,52 @@ client = MongoClient(connection_string)
 
 database = client[DICTIONARY]
 
-def to_dictionary(node: Node) -> dict:
-    data = {
-            "gtfs-id": int(node.gtfs_id),
-            "name": node.name,
-            "short-name": node.short_name,
-            "description": node.description,
-            "longitude" : float(node.longitude),
-            "latitude" : float(node.latitude)
-        }
-    if node.parental_node != None: 
-        data.update({"parental-node" : int(node.parental_node)})
+def to_route(candidate: dict) -> Route:
+    route = Route(candidate["route-id"], 
+                  candidate["agency-id"], candidate["route-short-name"], 
+                  candidate["description"])
+    route.route_long_name = candidate["route-long-name"]
+    route.route_type = candidate["route-type"]
+    route.route_type_str = candidate["route-type-as-text"]
+    
+    if "stops-reached" in candidate.keys():
+        route.stops = candidate["stops-reached"]
         
-    if len(node.children) > 0:
-        li = list(node.children)
-        data.update({"children" : li})
-        
-    return data
-
 def to_node(candidate: dict) -> Node:
-    node = Node()
-    node.gtfs_id = candidate["gtfs-id"]
-    node.name = candidate["name"]
-    node.short_name = candidate["short-name"]
-    node.description = candidate["description"]
-    node.longitude = candidate["longitude"]
-    node.latitude = candidate["latitude"]
-    if "parental-node" in candidate.keys:
+    node = Node(candidate["gtfs-id"], candidate["name"], 
+                candidate["short-name"],candidate["description"], 
+                candidate["longitude"], candidate["latitude"])
+    if "parental-node" in candidate.keys():
         node.parental_node = candidate["parental-node"]
     else:
         node.parental_node = None
-        
-    if "children" in candidate.keys:
+            
+    if "children" in candidate.keys():
         node.children = candidate["children"]
     else:
         node.children = []
-        
+            
+    if "routes" in candidate.keys():
+        node.routes = candidate["routes"]
+            
     return node
-    
 
 def upload_node_to_database(node: Node) -> bool:
-    data = to_dictionary(node)
+    data = node.to_dictionary()
     try:
         database[NODES_COLLECTION].insert_one(data)
+        
+    except Exception as e:
+        print(e)
+        return False
+    
+    else:
+        return True
+    
+def upload_route_to_database(route: Route):
+    data = route.to_dictionary()
+    try:
+        database[ROUTES_COLLECTION].insert_one(data)
         
     except Exception as e:
         print(e)
@@ -84,6 +89,16 @@ def add_child_to_node(node: int, child: int):
                                               {"$push" : {"children" : int(child)}})
     except Exception as e:
         print(e)
+        
+def add_stop_to_route(route: int, stop: int):
+    try:
+        database[ROUTES_COLLECTION].update_one({"route-id" : int(route)},
+                                                {"$push" : {"stops-reached" : int(stop)}})
+    except Exception as e:
+        print(e)
 
 def find_node_by_gtfs_id(gtfs_id: int) -> Node: 
-    return database[NODES_COLLECTION].find_one({'gtfs-id': gtfs_id})
+    return to_node(database[NODES_COLLECTION].find_one({'gtfs-id': int(gtfs_id)}))
+
+def find_route_by_id(route_id: int) -> Route:
+    return to_route(database[ROUTES_COLLECTION].find_one({"route-id" : int(route_id)}))

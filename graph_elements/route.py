@@ -41,3 +41,20 @@ class Route():
                 
     def add_stop(self, stop_id: int):
         self.stops.append(stop_id)
+        
+    def to_dictionary(self) -> dict:
+        data = {
+            "route-id" : int(self.route_id),
+            "agency-id" : self.agency_id,
+            "route-type" : int(self.route_type),
+            "route-type-as-text" : self.route_type_str,
+            "route-short-name" : self.route_short_name,
+            "route-long-name" : self.route_long_name,
+            "route-description" : self.route_description
+        }
+        
+        if len(self.stops) > 0:
+            data.update({"stops" : self.stops})
+        
+        return data
+        
