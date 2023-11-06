@@ -1,6 +1,6 @@
 from pymongo import MongoClient
 from dotenv import load_dotenv, find_dotenv
-from schema import node_schema, edge_schema, route_schema
+import schema as schemas
 import os
 import sys
 
@@ -10,6 +10,7 @@ PASSWORD = os.environ.get("MONGODB_PSW")
 NODES_COLLECTION = str(os.environ.get("COLLECTION_NODE_NAME"))
 EDGES_COLLECTION = os.environ.get("COLLECTION_EDGE_NAME")
 ROUTES_COLLECTION = os.environ.get("COLLECTION_ROUTES_NAME")
+TRIPS_COLLECTION = os.environ.get("COLLECTION_TRIPS_NAME")
 DICTIONARY = os.environ.get("READ_DICTIONARY").lower()
 
 
@@ -23,19 +24,26 @@ try:
 except Exception:
     print("Collection already exists")
 finally:
-    database.command("collMod",NODES_COLLECTION, validator = node_schema)
+    database.command("collMod",NODES_COLLECTION, validator = schemas.node_schema)
     
 try:
     database.create_collection(EDGES_COLLECTION)
 except Exception:
     print("Collection already exists")
 finally:
-    database.command("collMod",EDGES_COLLECTION, validator = edge_schema)
+    database.command("collMod",EDGES_COLLECTION, validator = schemas.edge_schema)
     
 try:
     database.create_collection(ROUTES_COLLECTION)
 except Exception:
     print("Collection already exists")
 finally:
-    database.command("collMod",ROUTES_COLLECTION, validator = route_schema)
+    database.command("collMod",ROUTES_COLLECTION, validator = schemas.route_schema)
+    
+try:
+    database.create_collection(TRIPS_COLLECTION)
+except Exception:
+    print("Collection already exists")
+finally:
+    database.command("collMod",TRIPS_COLLECTION, validator = schemas.trip_schema)
     

@@ -164,7 +164,7 @@ trip_schema = {
                "description" : "Foreign key to the route owning the current stop"
            },
            "service-id" : {
-               "bsonTpye" : "string",
+               "bsonType" : "string",
                "description" : "Foreign key to identify the service"
            },
            "direction-id" : {
@@ -173,7 +173,7 @@ trip_schema = {
                "enum" : [0,1]
            },
            "opposite-direction" : {
-               "bsonType" : "boolean",
+               "bsonType" : "bool",
                "description" : "Calculated from the direction-id, identifies if the trip is going the opposite direction"
            },
            "trip-headsign" : {

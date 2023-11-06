@@ -6,6 +6,7 @@ root_folder = os.path.abspath(os.path.dirname(os.path.dirname(os.path.abspath(__
 sys.path.append(root_folder)
 from graph_elements.node import Node
 from graph_elements.route import Route
+from graph_elements.trip import Trip
 
 load_dotenv(find_dotenv())
 
@@ -13,6 +14,7 @@ PASSWORD = os.environ.get("MONGODB_PSW")
 NODES_COLLECTION = str(os.environ.get("COLLECTION_NODE_NAME"))
 EDGES_COLLECTION = os.environ.get("COLLECTION_EDGE_NAME")
 ROUTES_COLLECTION = os.environ.get("COLLECTION_ROUTES_NAME")
+TRIPS_COLLECTION = os.environ.get("COLLECTION_TRIPS_NAME")
 DICTIONARY = os.environ.get("READ_DICTIONARY").lower()
 
 
@@ -55,6 +57,13 @@ def to_node(candidate: dict) -> Node:
             
     return node
 
+def to_trip(candidate: dict) -> Trip:
+    trip = Trip(candidate["trip-id"], candidate["route-id"],
+                candidate["service-id"], candidate["trip-headsign"])
+    trip.add_direction(candidate["direction-id"])
+    
+    return trip
+
 def upload_node_to_database(node: Node) -> bool:
     data = node.to_dictionary()
     try:
@@ -72,6 +81,18 @@ def upload_route_to_database(route: Route):
     try:
         database[ROUTES_COLLECTION].insert_one(data)
         
+    except Exception as e:
+        print(e)
+        return False
+    
+    else:
+        return True
+    
+def upload_trip_to_database(trip: Trip):
+    data = trip.to_dictionary()
+    try:
+        database[TRIPS_COLLECTION].insert_one(data)
+    
     except Exception as e:
         print(e)
         return False
@@ -112,3 +133,6 @@ def find_node_by_gtfs_id(gtfs_id: int) -> Node:
 
 def find_route_by_id(route_id: int) -> Route:
     return to_route(database[ROUTES_COLLECTION].find_one({"route-id" : int(route_id)}))
+
+def find_trip_by_id(trip_id: int) -> Trip:
+    return 

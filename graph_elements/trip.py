@@ -1,4 +1,4 @@
-class Trips():
+class Trip():
     
     def __init__(self, trip_id, route_id, service_id, trip_headsign):
         self.trip_id = trip_id
@@ -8,7 +8,7 @@ class Trips():
         
     def add_direction(self, direction):
         self.direction_id = direction
-        self.opposite_direction = not bool(direction)
+        self.opposite_direction = direction == '1'
         
     def to_dictionary(self) -> dict:
         data = {
