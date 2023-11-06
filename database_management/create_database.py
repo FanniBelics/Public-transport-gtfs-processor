@@ -19,26 +19,23 @@ client = MongoClient(connection_string)
 
 database = client[DICTIONARY]
 try:
-    nodesCollection = database.create_collection(NODES_COLLECTION)
+    database.create_collection(NODES_COLLECTION)
 except Exception:
     print("Collection already exists")
-    coll = database[NODES_COLLECTION]
 finally:
     database.command("collMod",NODES_COLLECTION, validator = node_schema)
     
 try:
-    edgesCollection = database.create_collection(EDGES_COLLECTION)
+    database.create_collection(EDGES_COLLECTION)
 except Exception:
     print("Collection already exists")
-    coll = database[EDGES_COLLECTION]
 finally:
     database.command("collMod",EDGES_COLLECTION, validator = edge_schema)
     
 try:
-    edgesCollection = database.create_collection(ROUTES_COLLECTION)
+    database.create_collection(ROUTES_COLLECTION)
 except Exception:
     print("Collection already exists")
-    coll = database[ROUTES_COLLECTION]
 finally:
     database.command("collMod",ROUTES_COLLECTION, validator = route_schema)
     

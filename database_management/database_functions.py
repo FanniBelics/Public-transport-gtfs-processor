@@ -33,6 +33,9 @@ def to_route(candidate: dict) -> Route:
     if "stops-reached" in candidate.keys():
         route.stops = candidate["stops-reached"]
         
+    if "trips" in candidate.keys():
+        route.trips = candidate["trips"]
+        
 def to_node(candidate: dict) -> Node:
     node = Node(candidate["gtfs-id"], candidate["name"], 
                 candidate["short-name"],candidate["description"], 
@@ -94,6 +97,13 @@ def add_stop_to_route(route: int, stop: int):
     try:
         database[ROUTES_COLLECTION].update_one({"route-id" : int(route)},
                                                 {"$push" : {"stops-reached" : int(stop)}})
+    except Exception as e:
+        print(e)
+        
+def add_trip_to_route(route: int, trip: int):
+    try:
+        database[ROUTES_COLLECTION].update_one({"route-id" : int(route)},
+                                                {"$push" : {"trips" : int(trip)}})
     except Exception as e:
         print(e)
 

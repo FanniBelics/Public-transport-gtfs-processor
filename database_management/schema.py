@@ -131,11 +131,55 @@ route_schema = {
             },
             "stops-reached" : {
                 "bsonType" : "array",
+                "uniqueItems" : True,
                 "items": {
                     "bsonType" : "int"
                 },
                 "description" : "Array of the stops, the specified route touches"
+            },
+            "trips" : {
+                "bsonType" : "array",
+                "uniqueItems" : True,
+                "items": {
+                    "bsonType" : "int"
+                },
+                "description" : "Array of the trips in the current route"
             }
         }
     }
+}
+
+trip_schema = {
+   "$jsonSchema" : {
+       "bsonType" : "object",
+       "title" : "Schema for validating trips",
+       "required" : ["trip-id", "route-id", "service-id"],
+       "properties" : {
+           "trip-id" : {
+               "bsonType" : "int",
+               "description" : "The id given in GTFS files for the current trip"
+           },
+           "route-id" : {
+               "bsonType" : "int",
+               "description" : "Foreign key to the route owning the current stop"
+           },
+           "service-id" : {
+               "bsonTpye" : "string",
+               "description" : "Foreign key to identify the service"
+           },
+           "direction-id" : {
+               "bsonType" : "int",
+               "description" : "Identifies the direction",
+               "enum" : [0,1]
+           },
+           "opposite-direction" : {
+               "bsonType" : "boolean",
+               "description" : "Calculated from the direction-id, identifies if the trip is going the opposite direction"
+           },
+           "trip-headsign" : {
+               "bsonType" : "string",
+               "description" : "Text that appears on signage identifying the trip's destination to riders"
+           }
+       } 
+   }
 }

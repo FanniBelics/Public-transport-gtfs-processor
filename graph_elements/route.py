@@ -6,6 +6,7 @@ class Route():
         self.route_short_name = route_short
         self.route_description = route_desc
         self.stops = []
+        self.trips = []
         
     def add_long_name(self, long_name: str):
         if(long_name == ''):
@@ -42,6 +43,9 @@ class Route():
     def add_stop(self, stop_id: int):
         self.stops.append(stop_id)
         
+    def add_trip(self, trip_id: int):
+        self.trips.append(trip_id)
+        
     def to_dictionary(self) -> dict:
         data = {
             "route-id" : int(self.route_id),
@@ -56,5 +60,7 @@ class Route():
         if len(self.stops) > 0:
             data.update({"stops" : self.stops})
         
-        return data
+        if len(self.trips) > 0:
+            data.update({"trips" : self.trips})
         
+        return data
