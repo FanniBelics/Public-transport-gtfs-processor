@@ -2,20 +2,16 @@ from .node import *
 
 class Edge():
     
-    def __init__(self, id, fromNode: Node, toNode: Node) -> None:
+    def __init__(self, id, fromStop: Node, toStop: Node) -> None:
         self.id = id
-        self.fromNode = fromNode
-        self.toNode = toNode
-        self.distance = 0
+        self.fromStop = fromStop
+        self.toStop = toStop
+        self.distance = 0,
+        self.travelling_time_mins = 0,
+        self.travelling_time_secs = 0
         
     def __str__(self) -> str:
         return "From {0} to {1}".format(self.fromNode, self.toNode)
-    
-    def set_distance(self) -> None:
-        self.set_distance = self.fromNode.calculate_dist(self.toNode)
-        
-    def get_distance(self) -> float:
-        return self.distance
     
     def __eq__(self, otherEdge: "Edge") -> bool:
         return self.fromNode == otherEdge.fromNode and self.toNode == otherEdge.toNode
@@ -37,3 +33,58 @@ class Edge():
     
     def __hash__(self) -> int:
         return hash(self.id)
+    
+    def set_distance(self, currentTravelled: int, perviousTravelled: int):
+        self.distance = currentTravelled - perviousTravelled
+        
+    def set_travelling_time(self, current: str, pervious: str):
+        current_split = [int(n) for n in current.split(':')]
+        pervious_split = [int(n) for n in pervious.split(':')]
+        
+        if pervious_split[2] > current_split[2]:
+            self.travelling_time_secs = pervious_split[2] - current_split[2]
+            self.travelling_time_mins -= 1
+        else:
+            self.travelling_time_secs = current_split[2] - pervious_split[2]
+            
+        if pervious_split[1] > current_split[1]:
+            self.travelling_time_secs = pervious_split[1] - current_split[1]
+            self.travelling_time_mins -= 60
+        else:
+            self.travelling_time_secs = current_split[1] - pervious_split[1]
+            
+        self.travelling_time_mins += 60 * (current_split[0]-pervious_split[0])**2
+        
+    def set_departure_time(self, departure: str):
+        self.departure_h, self.departure_m, self.departure_s = departure.split(":")
+        
+    def set_arrival_time(self, arrival: str):
+        self.arrival_h, self.arrival_m, self.arrival_s = arrival.split(":")
+        
+    def set_owner_trip(self, trip_id: int):
+        self.owner_trip = int(trip_id)
+    
+    def set_owner_route(self, route_id: int):
+        self.owner_route = int(route_id)
+        
+    def to_dictionary(self) -> dict:
+        data = {
+            "id" : int(self.id),
+            "from-stop" : int(self.fromStop),
+            "to-stop" : int(self.toStop),
+            "distance" : float(self.distance),
+            "travelling-time-mins" : int(self.travelling_time_mins),
+            "travelling-time-secs" : int(self.travelling_time_secs),
+            "departure-time" : {
+                "hour" : int(self.departure_h),
+                "minute" : int(self.departure_m),
+                "second" : int(self.departure_s)
+            },
+            "arrival-time" : {
+                "hour" : int(self.arrival_h),
+                "minute" : int(self.arrival_m),
+                "second" : int(self.arrival_s)
+            },
+            "owner-trip" : int(self.owner_trip),
+            "owner-route" : int(self.owner_route)
+        }

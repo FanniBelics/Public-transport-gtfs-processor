@@ -60,19 +60,19 @@ edge_schema = {
     "$jsonSchema" : {
         "bsonType" : "object",
         "title": "Schema for Edge schema validation",
-        "required" : ["id", "fromNodeId", "toNodeId", "distance"],
+        "required" : ["id", "from-stop", "to-stop", "distance"],
         "properties" : {
             "id" : {
                 "bsonType" : "int",
                 "description": "Id of the way from one stop to another on one route"
             },
-            "fromNodeId" : {
+            "from-stop" : {
                 "bsonType" : "int",
-                "description" : "Node id of the node the edge starts from"
+                "description" : "Stop id of the node the edge starts from"
             },
-            "toNodeId" : {
+            "to-stop" : {
                 "bsonType" : "int",
-                "description" : "Node id of the node the edge goes to"
+                "description" : "Stop id of the node the edge goes to"
             },
             "distance": {
                 "bsonType" : "double",
@@ -89,6 +89,54 @@ edge_schema = {
                 "description" : "Travelling time in seconds, without minutes",
                 "minimum" : 0,
                 "maximum" : 60
+            },
+            "departure-time" : {
+                "bsonType" : "object",
+                "description" : "The time the travel starts from the current stop",
+                "properties" : {
+                           "hour" : {
+                               "bsonType" : "int",
+                               "minimum" : 0
+                           },
+                           "minute" : {
+                               "bsonType" : "int",
+                               "minimum" : 0,
+                               "maximum" : 60
+                           },
+                           "second" : {
+                               "bsonType" : "int",
+                               "minimum" : 0,
+                               "maximum" : 60
+                           }
+                       }
+            },
+            "arrival-time" : {
+                "bsonType" : "object",
+                "description" : "The time the vehicle arrives to the following stop",
+                "properties" : {
+                           "hour" : {
+                               "bsonType" : "int",
+                               "minimum" : 0
+                           },
+                           "minute" : {
+                               "bsonType" : "int",
+                               "minimum" : 0,
+                               "maximum" : 60
+                           },
+                           "second" : {
+                               "bsonType" : "int",
+                               "minimum" : 0,
+                               "maximum" : 60
+                           }
+                       }
+            },
+            "owner-trip" : {
+                "bsonType" : "int",
+                "description" : "The trip that specifies this transportation between two stops"
+            },
+            "owner-route" : {
+                "bsonType" : "int",
+                "description" : "The route that the current transportation belongs to"
             }
         }
     }
@@ -179,6 +227,45 @@ trip_schema = {
            "trip-headsign" : {
                "bsonType" : "string",
                "description" : "Text that appears on signage identifying the trip's destination to riders"
+           },
+           "stops-reached" : {
+               "bsonType" : "array",
+               "description" : "Sequence of stops reached in each trip",
+               "items" : {
+                   "stop-id" : {
+                       "bsonType" : "int"
+                   },
+                   "stop_time" : {
+                       "bsonType" : "object",
+                       "properties" : {
+                           "hour" : {
+                               "bsonType" : "int",
+                               "minimum" : 0
+                           },
+                           "minute" : {
+                               "bsonType" : "int",
+                               "minimum" : 0,
+                               "maximum" : 60
+                           },
+                           "second" : {
+                               "bsonType" : "int",
+                               "minimum" : 0,
+                               "maximum" : 60
+                           }
+                       }
+                       
+                   },
+                   "stop-type" : {
+                       "bsonType" : "int",
+                       "enum" : [0, 1, 2],
+                       "description" : "Specifies whether the stop is the first or last stop, or none"
+                   },
+                   "stop-type-str" : {
+                       "bsonType" : "string",
+                       "enum" : ["First stop", "None", "Last stop"],
+                       "description" : "Stop type in string format, base language: EN, calculated from stop-type"
+                   }
+               }
            }
        } 
    }
