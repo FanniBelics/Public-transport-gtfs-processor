@@ -254,16 +254,6 @@ trip_schema = {
                            }
                        }
                        
-                   },
-                   "stop-type" : {
-                       "bsonType" : "int",
-                       "enum" : [0, 1, 2],
-                       "description" : "Specifies whether the stop is the first or last stop, or none"
-                   },
-                   "stop-type-str" : {
-                       "bsonType" : "string",
-                       "enum" : ["First stop", "None", "Last stop"],
-                       "description" : "Stop type in string format, base language: EN, calculated from stop-type"
                    }
                }
            }
