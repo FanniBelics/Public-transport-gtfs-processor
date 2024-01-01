@@ -6,7 +6,7 @@ root_folder = os.path.abspath(os.path.dirname(os.path.dirname(os.path.abspath(__
 sys.path.append(root_folder)
 from graph_elements.node import Node
 from graph_elements.route import Route
-from graph_elements.trip import Trip
+from graph_elements.trip import Trip, stop_to_dictionary
 
 load_dotenv(find_dotenv())
 
@@ -27,7 +27,7 @@ database = client[DICTIONARY]
 def to_route(candidate: dict) -> Route:
     route = Route(candidate["route-id"], 
                   candidate["agency-id"], candidate["route-short-name"], 
-                  candidate["description"])
+                  candidate["route-description"])
     route.route_long_name = candidate["route-long-name"]
     route.route_type = candidate["route-type"]
     route.route_type_str = candidate["route-type-as-text"]
@@ -37,6 +37,8 @@ def to_route(candidate: dict) -> Route:
         
     if "trips" in candidate.keys():
         route.trips = candidate["trips"]
+    
+    return route
         
 def to_node(candidate: dict) -> Node:
     node = Node(candidate["gtfs-id"], candidate["name"], 
@@ -128,6 +130,13 @@ def add_trip_to_route(route: int, trip: int):
     except Exception as e:
         print(e)
 
+def add_stop_to_trip(trip: int, stop: list):
+    try:
+        database[TRIPS_COLLECTION].update_one({"trip-id" : int(trip)},
+                                                {"$push" : {"stops-reached" : stop_to_dictionary(stop)}})
+    except Exception as e:
+        print(e)
+
 def find_node_by_gtfs_id(gtfs_id: int) -> Node: 
     return to_node(database[NODES_COLLECTION].find_one({'gtfs-id': int(gtfs_id)}))
 
@@ -135,4 +144,8 @@ def find_route_by_id(route_id: int) -> Route:
     return to_route(database[ROUTES_COLLECTION].find_one({"route-id" : int(route_id)}))
 
 def find_trip_by_id(trip_id: int) -> Trip:
-    return 
+    return to_trip(database[TRIPS_COLLECTION].find_one({"trip-id" : int(trip_id)}))
+
+def add_stops_to_trip(trip: Trip):
+    database[TRIPS_COLLECTION].update_one({"trip-id" : trip.trip_id},
+                                          {"$set" : {trip.stops_to_dictionary()}}) 

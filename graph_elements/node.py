@@ -64,7 +64,9 @@ class Node():
         
         return data
 
-    
+    def routes_to_dictionary(self) -> dict:
+        li = list(self.routes)
+        return {"routes" : li}
 
 
 # acos(sin(lat1)*sin(lat2)+cos(lat1)*cos(lat2)*cos(lon2-lon1))*6371

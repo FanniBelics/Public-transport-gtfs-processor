@@ -33,9 +33,37 @@ class Trip():
             "opposite-direction" : self.opposite_direction,
             "trip-headsign" : self.trip_headsign,
             "stop-type" : int(self.stop_type),
-            "stop-type-str" : self.stop_type_str,
+            "stop-type-str" : self.stop_type_str
         }
         
-        
+        elements_dict = self.stops_to_dictionary()
+        data.update(elements_dict)
         
         return data
+    
+    def stops_to_dictionary(self: "Trip") -> dict:
+        elements = []
+        if len(self.stops_reached) > 0:
+            for stop in self.stops_reached:
+                stop_dict = {
+                    "stop-id" : int(stop[0]),
+                    "stop-time" : {
+                        "hour" : int(stop[1][0]),
+                        "minute" : int(stop[1][1]),
+                        "second" : int(stop[1][2]),
+                    }
+                }
+                elements.append(stop_dict)
+        
+        return {"stops-reached" : elements}
+    
+def stop_to_dictionary(stop) -> dict:
+    stop_dict = {
+                "stop-id" : int(stop[0]),
+                "stop-time" : {
+                    "hour" : int(stop[1][0]),
+                    "minute" : int(stop[1][1]),
+                    "second" : int(stop[1][2]),
+                }
+    }
+    return stop_dict
