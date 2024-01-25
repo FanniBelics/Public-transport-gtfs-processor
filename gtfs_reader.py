@@ -4,6 +4,7 @@ import os
 from graph_elements.node import Node
 from graph_elements.route import Route
 from graph_elements.trip import Trip
+from graph_elements.edge import Edge
 import database_management.database_functions as database_functions
 from dotenv import load_dotenv, find_dotenv
 import os
@@ -65,7 +66,37 @@ def read_trips():
                 database_functions.upload_trip_to_database(newTrip)
                 database_functions.add_trip_to_route(trip[1],trip[0])
                 
-read_routes()
-read_trips()
+def read_stop_times():
+    with open(full_path + "/stop_times.txt", encoding="utf-8") as stop_times:
+        oldEdge = Edge(0,0,0)
+        for stop_time in csv.reader(stop_times):
+            #Saving stop reaching to trip
+            if stop_time[0] != "trip_id":
                 
-    
+                id = stop_time[0] + "_" + stop_time[1]
+                newEdge = Edge(id, oldEdge.toStop, stop_time[2])
+                newEdge.set_departure_time(stop_time[5])
+                newEdge.set_owner_trip(int(stop_time[0]))
+                newEdge.set_distance(int(stop_time[8]), oldEdge.distance)
+                
+                if stop_time[8] == "0":
+                    trip = database_functions.find_trip_by_id(int(stop_time[0]))
+                    route = database_functions.find_route_by_id(trip.route_id)
+                    newEdge.set_owner_route(route.route_id)
+                    newEdge.set_arrival_time(stop_time[4])
+                    
+                else:
+                    newEdge.set_arrival_time(oldEdge.get_departure_time)
+                    newEdge.set_owner_route(route.route_id)
+                    newEdge.set_travelling_time(stop_time[4], oldEdge.get_departure_time())
+                    #database_functions.upload_edge_to_database(newEdge)
+                
+                oldEdge = newEdge
+                trip.add_reached_stop(stop_time[2], stop_time[5])
+                route.add_stop(stop_time[2])
+                #database_functions.add_stop_to_route(route.route_id, stop_time[2]) #does same don't touch db yet
+                #database_functions.add_stop_to_trip(trip.trip_id, trip.stops_reached[-1]) #does same don't touch db yet
+                print(trip.trip_id, trip.stops_reached[-1])
+
+        
+read_stop_times()

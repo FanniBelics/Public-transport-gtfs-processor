@@ -7,6 +7,7 @@ sys.path.append(root_folder)
 from graph_elements.node import Node
 from graph_elements.route import Route
 from graph_elements.trip import Trip, stop_to_dictionary
+from graph_elements.edge import Edge
 
 load_dotenv(find_dotenv())
 
@@ -101,6 +102,18 @@ def upload_trip_to_database(trip: Trip):
     
     else:
         return True
+    
+def upload_edge_to_database(edge: Edge):
+    data = edge.to_dictionary()
+    try:
+        database[EDGES_COLLECTION].insert_one(data)
+    
+    except Exception as e:
+        print(e)
+        return False
+    
+    else:
+        return True
 
 def add_parental_node_to_node(node: Node, parent: int):
     try:
@@ -149,3 +162,4 @@ def find_trip_by_id(trip_id: int) -> Trip:
 def add_stops_to_trip(trip: Trip):
     database[TRIPS_COLLECTION].update_one({"trip-id" : trip.trip_id},
                                           {"$set" : {trip.stops_to_dictionary()}}) 
+    
