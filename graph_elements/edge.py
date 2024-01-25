@@ -6,8 +6,8 @@ class Edge():
         self.id = id
         self.fromStop = fromStop
         self.toStop = toStop
-        self.distance = 0,
-        self.travelling_time_mins = 0,
+        self.distance = 0
+        self.travelling_time_mins = 0
         self.travelling_time_secs = 0
         
     def __str__(self) -> str:
@@ -48,15 +48,18 @@ class Edge():
             self.travelling_time_secs = current_split[2] - pervious_split[2]
             
         if pervious_split[1] > current_split[1]:
-            self.travelling_time_secs = pervious_split[1] - current_split[1]
-            self.travelling_time_mins -= 60
+            self.travelling_time_mins = pervious_split[1] - current_split[1]
+            self.travelling_time_mins = 60 -  self.travelling_time_mins
         else:
-            self.travelling_time_secs = current_split[1] - pervious_split[1]
+            self.travelling_time_mins = current_split[1] - pervious_split[1]
             
-        self.travelling_time_mins += 60 * (current_split[0]-pervious_split[0])**2
+        self.travelling_time_mins += 60 * (current_split[0]-pervious_split[0]-1)**2
         
     def set_departure_time(self, departure: str):
         self.departure_h, self.departure_m, self.departure_s = departure.split(":")
+        
+    def get_departure_time(self) -> str:
+        return ":".join([self.departure_h, self.departure_m, self.departure_s])
         
     def set_arrival_time(self, arrival: str):
         self.arrival_h, self.arrival_m, self.arrival_s = arrival.split(":")
