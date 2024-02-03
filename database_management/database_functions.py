@@ -2,8 +2,6 @@ from pymongo import MongoClient
 from dotenv import load_dotenv, find_dotenv
 import os,sys, path
 
-root_folder = os.path.abspath(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.path.append(root_folder)
 from graph_elements.node import Node
 from graph_elements.route import Route
 from graph_elements.trip import Trip, stop_to_dictionary
@@ -163,3 +161,10 @@ def add_stops_to_trip(trip: Trip):
     database[TRIPS_COLLECTION].update_one({"trip-id" : trip.trip_id},
                                           {"$set" : {trip.stops_to_dictionary()}}) 
     
+def get_all_stops():
+    stops = database[NODES_COLLECTION].find({},{})
+    converted_stops = []
+    for stop in stops:
+         converted_stops.append(stop)
+        
+    return converted_stops
