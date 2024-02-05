@@ -30,8 +30,8 @@ class Node():
         return hash(self.gtfs_id)
     
     def calculate_dist(self, otherNode: "Node") -> float:
-        return math.acos(math.sin(self.latitude) * math.sin(otherNode.latitude) + math.cos(self.latitude)*math.cos(otherNode.latitude) 
-                         *math.cos(otherNode.longitude - self.longitude)) * EARTH_RADIUS_KM
+        return math.acos(math.sin(math.radians(self.latitude)) * math.sin(math.radians(otherNode.latitude)) + math.cos(math.radians(self.latitude))*math.cos(math.radians(otherNode.latitude)) 
+                         *math.cos(math.radians(otherNode.longitude) - math.radians(self.longitude))) * EARTH_RADIUS_KM
     
     def set_parental_node(self,parent_node: "Node"):
         self.parental_node = int(parent_node.gtfs_id)

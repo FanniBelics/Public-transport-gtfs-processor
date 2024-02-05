@@ -224,7 +224,7 @@ trip_schema = {
                "bsonType" : "bool",
                "description" : "Calculated from the direction-id, identifies if the trip is going the opposite direction"
            },
-           "trip-headsign" : {
+           "trip_headsign" : {
                "bsonType" : "string",
                "description" : "Text that appears on signage identifying the trip's destination to riders"
            },
@@ -232,7 +232,9 @@ trip_schema = {
                "bsonType" : "array",
                "description" : "Sequence of stops reached in each trip",
                "items" : {
-                   "stop-id" : {
+                   "bsonType": "object",
+                    "properties": {
+                   "stop_id" : {
                        "bsonType" : "int"
                    },
                    "stop_time" : {
@@ -256,6 +258,7 @@ trip_schema = {
                        
                    }
                }
+            }
            }
        } 
    }

@@ -91,3 +91,5 @@ class Edge():
             "owner-trip" : int(self.owner_trip),
             "owner-route" : int(self.owner_route)
         }
+        
+        return data

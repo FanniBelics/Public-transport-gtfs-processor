@@ -11,8 +11,7 @@ import csv
 import asyncio
 
 import aiofiles
-from aiocsv import AsyncReader, AsyncDictReader, AsyncWriter, AsyncDictWriter
-
+from aiocsv import AsyncDictReader
 
 absolute_path = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
 load_dotenv(find_dotenv())
@@ -81,18 +80,20 @@ def read_stop_times():
                 newEdge = Edge(id, oldEdge.toStop, stop_time[2])
                 newEdge.set_departure_time(stop_time[5])
                 newEdge.set_owner_trip(int(stop_time[0]))
-                newEdge.set_distance(int(stop_time[8]), oldEdge.distance)
+                
                 
                 if stop_time[8] == "0":
                     trip = database_functions.find_trip_by_id(int(stop_time[0]))
                     route = database_functions.find_route_by_id(trip.route_id)
                     newEdge.set_owner_route(route.route_id)
                     newEdge.set_arrival_time(stop_time[4])
+                    newEdge.set_distance(0,0)
                     
                 else:
                     newEdge.set_arrival_time(oldEdge.get_departure_time())
                     newEdge.set_owner_route(route.route_id)
                     newEdge.set_travelling_time(stop_time[4], oldEdge.get_departure_time())
+                    newEdge.set_distance(int(stop_time[8]), oldEdge.distance)
                     database_functions.upload_edge_to_database(newEdge)
                 
                 oldEdge = newEdge
@@ -100,3 +101,5 @@ def read_stop_times():
                 route.add_stop(stop_time[2])
                 database_functions.add_stop_to_route(route.route_id, stop_time[2])
                 database_functions.add_stop_to_trip(trip.trip_id, trip.stops_reached[-1])
+
+read_stop_times()
