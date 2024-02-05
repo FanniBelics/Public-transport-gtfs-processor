@@ -1,6 +1,7 @@
 from pymongo import MongoClient
 from dotenv import load_dotenv, find_dotenv
-import os,sys, path
+import os
+
 
 from graph_elements.node import Node
 from graph_elements.route import Route
@@ -60,7 +61,7 @@ def to_node(candidate: dict) -> Node:
 
 def to_trip(candidate: dict) -> Trip:
     trip = Trip(candidate["trip-id"], candidate["route-id"],
-                candidate["service-id"], candidate["trip-headsign"])
+                candidate["service-id"], candidate["trip_headsign"])
     trip.add_direction(candidate["direction-id"])
     
     return trip
@@ -161,10 +162,16 @@ def add_stops_to_trip(trip: Trip):
     database[TRIPS_COLLECTION].update_one({"trip-id" : trip.trip_id},
                                           {"$set" : {trip.stops_to_dictionary()}}) 
     
+
+#---- Functions for processing ----
 def get_all_stops():
     stops = database[NODES_COLLECTION].find({},{})
     converted_stops = []
     for stop in stops:
-         converted_stops.append(stop)
+         converted_stops.append(to_node(stop))
         
     return converted_stops
+
+def is_stop_on_same_route(stop1: Node, stop2: Node) -> bool:
+   data = list(database[ROUTES_COLLECTION].find({"stops-reached" : {"$all" : [stop1.gtfs_id, stop2.gtfs_id]}}))
+   return len(data) > 0
