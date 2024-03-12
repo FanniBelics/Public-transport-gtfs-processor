@@ -13,12 +13,16 @@ ROUTES_COLLECTION = os.environ.get("COLLECTION_ROUTES_NAME")
 TRIPS_COLLECTION = os.environ.get("COLLECTION_TRIPS_NAME")
 DICTIONARY = os.environ.get("READ_DICTIONARY").lower()
 
-
 connection_string=f"mongodb+srv://belics_fanni:{PASSWORD}@gtfs2023.7e1cux4.mongodb.net/?retryWrites=true&w=majority&authSource=admin"
 
 client = MongoClient(connection_string)
 
 database = client[DICTIONARY]
+
+#database.drop_collection(NODES_COLLECTION)
+#database.drop_collection(TRIPS_COLLECTION)
+#database.drop_collection(ROUTES_COLLECTION)
+
 try:
     database.create_collection(NODES_COLLECTION)
 except Exception:
@@ -46,4 +50,3 @@ except Exception:
     print("Collection already exists")
 finally:
     database.command("collMod",TRIPS_COLLECTION, validator = schemas.trip_schema)
-    

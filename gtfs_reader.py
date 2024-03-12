@@ -39,7 +39,9 @@ async def read_stops():
                 database_functions.add_parental_node_to_node(newNode, stop["parent_station"])
                 database_functions.add_child_to_node(stop["parent_station"], newNode.gtfs_id)
 
-#asyncio.run(read_stops()) #run when creating a new database 
+print("Reading stops")
+asyncio.run(read_stops()) #run when creating a new database 
+print("Stops read")
 
 async def read_routes():
     """Method to read the routes.txt file and load it's content into the database\n
@@ -53,8 +55,9 @@ async def read_routes():
             newRoute.add_route_type(route["route_type"])
             database_functions.upload_route_to_database(newRoute)
 
-
-#asyncio.run(read_routes()) #run when creating new database
+print("Reading routes")
+asyncio.run(read_routes()) #run when creating new database
+print("Routes read")
                 
 async def read_trips():
     """Method to read the trips.txt file and load it's content into the database\n
@@ -67,8 +70,10 @@ async def read_trips():
             newTrip.add_direction(trip["direction_id"])
             database_functions.upload_trip_to_database(newTrip)
             database_functions.add_trip_to_route(trip["route_id"],trip["trip_id"])
-            
-#asyncio.run(read_trips()) #run when creating new database
+ 
+print("Reading trips")            
+asyncio.run(read_trips()) #run when creating new database
+print("Trips read")
                 
 def read_stop_times():
     with open(full_path + "/stop_times.txt", encoding="utf-8") as stop_times:
@@ -102,4 +107,6 @@ def read_stop_times():
                 database_functions.add_stop_to_route(route.route_id, stop_time[2])
                 database_functions.add_stop_to_trip(trip.trip_id, trip.stops_reached[-1])
 
-read_stop_times()
+print("Reading stop times...")
+#read_stop_times()
+print("Stop times read")

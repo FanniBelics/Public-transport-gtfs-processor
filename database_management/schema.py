@@ -179,7 +179,7 @@ route_schema = {
             },
             "stops-reached" : {
                 "bsonType" : "array",
-                "uniqueItems" : False,
+                "uniqueItems" : True,
                 "items": {
                     "bsonType" : "int"
                 },
