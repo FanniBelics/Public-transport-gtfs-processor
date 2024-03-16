@@ -1,8 +1,8 @@
 from pymongo import MongoClient
 from dotenv import load_dotenv, find_dotenv
 import schema as schemas
+import result_schema 
 import os
-import sys
 
 load_dotenv(find_dotenv())
 
@@ -11,6 +11,7 @@ NODES_COLLECTION = str(os.environ.get("COLLECTION_NODE_NAME"))
 EDGES_COLLECTION = os.environ.get("COLLECTION_EDGE_NAME")
 ROUTES_COLLECTION = os.environ.get("COLLECTION_ROUTES_NAME")
 TRIPS_COLLECTION = os.environ.get("COLLECTION_TRIPS_NAME")
+SOLUTIONS_COLLECTION = os.environ.get("COLLECTION_SOLUTIONS_NAME")
 DICTIONARY = os.environ.get("READ_DICTIONARY").lower()
 
 connection_string=f"mongodb+srv://belics_fanni:{PASSWORD}@gtfs2023.7e1cux4.mongodb.net/?retryWrites=true&w=majority&authSource=admin"
@@ -50,3 +51,10 @@ except Exception:
     print("Collection already exists")
 finally:
     database.command("collMod",TRIPS_COLLECTION, validator = schemas.trip_schema)
+    
+try:
+    database.create_collection(SOLUTIONS_COLLECTION)
+except Exception:
+    print("Solutions collection already exists")
+finally:
+    database.command("collMod", SOLUTIONS_COLLECTION, validator = result_schema.result_schema)
