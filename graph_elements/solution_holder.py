@@ -8,7 +8,7 @@ class Solution_Holder():
     def addChange(self, changeStructure: list["Solution_Holder"]):
         self.changes.append(changeStructure)
         
-    def create_inner_dict(self) -> dict:
+    def create_inner_dict(self) -> list:
         changesList = []
         for changes in self.changes:
             changeSetList = []
@@ -33,3 +33,4 @@ class Solution_Holder():
             data["changes"] = self.create_inner_dict()
             
         return data
+    

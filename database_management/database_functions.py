@@ -7,6 +7,7 @@ from graph_elements.node import Node
 from graph_elements.route import Route
 from graph_elements.trip import Trip, stop_to_dictionary
 from graph_elements.edge import Edge
+from graph_elements.solution_holder import Solution_Holder
 
 load_dotenv(find_dotenv())
 
@@ -16,6 +17,7 @@ EDGES_COLLECTION = os.environ.get("COLLECTION_EDGE_NAME")
 ROUTES_COLLECTION = os.environ.get("COLLECTION_ROUTES_NAME")
 TRIPS_COLLECTION = os.environ.get("COLLECTION_TRIPS_NAME")
 DICTIONARY = os.environ.get("READ_DICTIONARY").lower()
+SOLUTIONS_COLLECTION = os.environ.get("COLLECTION_SOLUTIONS_NAME")
 
 
 connection_string=f"mongodb+srv://belics_fanni:{PASSWORD}@gtfs2023.7e1cux4.mongodb.net/?retryWrites=true&w=majority&authSource=admin"
@@ -175,3 +177,33 @@ def get_all_stops():
 def is_stop_on_same_route(stop1: Node, stop2: Node) -> bool:
    data = list(database[ROUTES_COLLECTION].find({"stops-reached" : {"$all" : [stop1.gtfs_id, stop2.gtfs_id]}}))
    return len(data) > 0
+
+def find_routes_by_stop_id(stop_id: int) -> list[int]:
+    return list(database[ROUTES_COLLECTION].find({"stops-reached" : stop_id},
+                                                 {"route-id":1, "route-short-name":1, "stops-reached":1, "_id":0}))
+    
+def find_routes_by_stop_id_and_exception_routes(stop_id: int, route_id_list: list = []) -> list[int]:
+    return list(database[ROUTES_COLLECTION].find({"$and" :[{"stops-reached" : stop_id,
+                                                           "route-id" : {"$nin" : route_id_list}}]},
+                                                 {"route-id":1, "route-short-name":1, "stops-reached":1, "_id":0}))
+    
+def get_all_routes() -> list[Route]:
+    data =  list(database[ROUTES_COLLECTION].find({}))
+    data = [to_route(route) for route in data]
+    return data
+
+def solution_exists_in_db(fromStop: int, toStop: int):
+    return database[SOLUTIONS_COLLECTION].count_documents({"from-id": fromStop, "to-id": toStop}) > 0
+
+def upload_solution(solution: dict):
+    database[SOLUTIONS_COLLECTION].insert_one(solution)
+    
+def add_path_to_solution(fromStop: int, toStop:int, pathway: dict):
+    database[SOLUTIONS_COLLECTION].update_one({"from-id": fromStop, "to-id": toStop}, 
+                                              {"$push": {"changes": pathway}})
+    
+def clear_sol():
+    database[SOLUTIONS_COLLECTION].delete_many({})
+    
+def find_solution_by_from_stop():
+    pass

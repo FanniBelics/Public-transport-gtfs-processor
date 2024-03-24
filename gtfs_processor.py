@@ -2,6 +2,7 @@ from graph_elements.node import Node
 from graph_elements.route import Route
 from graph_elements.trip import Trip
 from graph_elements.edge import Edge
+from graph_elements.solution_holder import Solution_Holder
 from itertools import combinations
 import database_management.database_functions as database_functions
 import asyncio
@@ -61,13 +62,22 @@ async def write_to_file():
         
 #asyncio.run(write_to_file())
 
-async def stoplist_method():
-    MAX_CHANGES = 1
-    for stop in STOPS:
-        stoplist = []
-        route = database_functions.find_routes_by_stop_id(stop.gtfs_id)
-        if not len(route):
-            continue
-        print(f"{route}")
-        
-asyncio.run(stoplist_method())
+async def stoplist_method_singles():
+    routes = database_functions.get_all_routes()
+    for route in routes: 
+        for stop in route.stops:
+            pivot_list = route.stops[route.stops.index(stop) +1 : -1]
+            for pair_stop in pivot_list:
+                if not is_close(database_functions.find_node_by_gtfs_id(stop), database_functions.find_node_by_gtfs_id(pair_stop)):
+                    parent = Solution_Holder(stop, pair_stop)
+                    parent.addChange([Solution_Holder(stop, pair_stop, route.route_id)])
+                    if database_functions.solution_exists_in_db(stop, pair_stop):
+                        database_functions.add_path_to_solution(stop, pair_stop, parent.create_inner_dict()[-1])
+                    else:
+                        database_functions.upload_solution(parent.to_dictionary())
+ 
+print("Uploading single solutions...")       
+#database_functions.clear_sol()
+#asyncio.run(stoplist_method_singles())
+print("Singles uploaded")
+
