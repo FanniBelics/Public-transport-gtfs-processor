@@ -205,5 +205,54 @@ def add_path_to_solution(fromStop: int, toStop:int, pathway: dict):
 def clear_sol():
     database[SOLUTIONS_COLLECTION].delete_many({})
     
-def find_solution_by_from_stop():
-    pass
+def find_solution_by_from_stop(fromStop: int) -> list[Solution_Holder]:
+    return Solution_Holder.to_dictionary(database[SOLUTIONS_COLLECTION].find({"from-id": fromStop}))
+
+def get_all_solutions():
+    data = database[SOLUTIONS_COLLECTION].find({})
+    li = []
+    for element in data:
+        sol = Solution_Holder(element["from-id"], element["to-id"])
+        sol.addChange(element["changes"])
+        li.append(sol)
+        
+    return li
+
+def is_there_alternative(fromStop: int, toStop: int, route: int):
+    if database[SOLUTIONS_COLLECTION].find(
+        {
+            "changes" : {
+                "$elemMatch": {
+                     "$elemMatch": {
+                        "from-stop-partial": fromStop,
+                        "to-stop-partial":toStop,
+                        "route-id" : route
+                        }
+                    }
+            }}):
+            return True
+    #TODO
+    
+    
+def get_stopSets_by_fromStop(fromStop: int, route: int) -> list:
+    data =  database[SOLUTIONS_COLLECTION].find({
+        "from-id": fromStop,
+        "changes" : {
+        "$not" : {
+            "$elemMatch" : {
+                "route-id" : route
+            }
+        }
+    }},
+    {
+        "changes" : 1,
+         "_id" : 0
+    })
+    
+    data = [changes["changes"] for changes in data]
+    candidates = []
+    for pair in data:
+        for change_set in pair:
+            if all(change_pair["route-id"] != route for change_pair in change_set):
+                candidates.append(change_set)
+    return candidates

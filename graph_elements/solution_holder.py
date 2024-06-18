@@ -1,8 +1,7 @@
 class Solution_Holder():
-    def __init__(self, fromStop, toStop, route = "") -> None:
+    def __init__(self, fromStop:int, toStop:int) -> None:
         self.fromStop = fromStop
         self.toStop = toStop
-        self.route = route
         self.changes = []
         
     def addChange(self, changeStructure: list["Solution_Holder"]):

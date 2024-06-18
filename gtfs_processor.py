@@ -81,3 +81,15 @@ print("Uploading single solutions...")
 #asyncio.run(stoplist_method_singles())
 print("Singles uploaded")
 
+async def stoplist_method_appending():
+    MAX_CHANGES = 5
+    for solution in database_functions.get_all_solutions():
+      for change_set in solution.changes:
+          for change_single in change_set:
+            first_stop = solution.fromStop
+            last_stop = solution.toStop
+            route = change_single[0]["route-id"]
+            print(database_functions.get_stopSets_by_fromStop(last_stop, route))
+  
+  
+asyncio.run(stoplist_method_appending())
