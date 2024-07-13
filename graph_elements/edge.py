@@ -37,23 +37,26 @@ class Edge():
     def set_distance(self, currentTravelled: int, perviousTravelled: int):
         self.distance = currentTravelled - perviousTravelled
         
-    def set_travelling_time(self, current: str, pervious: str):
+    def set_travelling_time(self, current: str, previous: str):
         current_split = [int(n) for n in current.split(':')]
-        pervious_split = [int(n) for n in pervious.split(':')]
-        
-        if pervious_split[2] > current_split[2]:
-            self.travelling_time_secs = pervious_split[2] - current_split[2]
-            self.travelling_time_mins -= 1
+        previous_split = [int(n) for n in previous.split(':')]
+
+        if previous_split[2] > current_split[2]:
+            self.travelling_time_secs = (current_split[2] + 60) - previous_split[2]
+            current_split[1] -= 1
         else:
-            self.travelling_time_secs = current_split[2] - pervious_split[2]
-            
-        if pervious_split[1] > current_split[1]:
-            self.travelling_time_mins = pervious_split[1] - current_split[1]
-            self.travelling_time_mins = 60 -  self.travelling_time_mins
+            self.travelling_time_secs = current_split[2] - previous_split[2]
+
+        if previous_split[1] > current_split[1]:
+            self.travelling_time_mins = (current_split[1] + 60) - previous_split[1]
+            current_split[0] -= 1 
         else:
-            self.travelling_time_mins = current_split[1] - pervious_split[1]
-            
-        self.travelling_time_mins += 60 * (current_split[0]-pervious_split[0]-1)**2
+            self.travelling_time_mins = current_split[1] - previous_split[1]
+
+        self.travelling_time_hours = current_split[0] - previous_split[0]
+
+        self.travelling_time_mins += self.travelling_time_hours * 60
+
         
     def set_departure_time(self, departure: str):
         self.departure_h, self.departure_m, self.departure_s = departure.split(":")

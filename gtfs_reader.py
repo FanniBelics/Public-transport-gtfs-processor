@@ -40,7 +40,7 @@ async def read_stops():
                 database_functions.add_child_to_node(stop["parent_station"], newNode.gtfs_id)
 
 print("Reading stops")
-asyncio.run(read_stops()) #run when creating a new database 
+#asyncio.run(read_stops()) #run when creating a new database 
 print("Stops read")
 
 async def read_routes():
@@ -56,7 +56,7 @@ async def read_routes():
             database_functions.upload_route_to_database(newRoute)
 
 print("Reading routes")
-asyncio.run(read_routes()) #run when creating new database
+#asyncio.run(read_routes()) #run when creating new database
 print("Routes read")
                 
 async def read_trips():
@@ -72,7 +72,7 @@ async def read_trips():
             database_functions.add_trip_to_route(trip["route_id"],trip["trip_id"])
  
 print("Reading trips")            
-asyncio.run(read_trips()) #run when creating new database
+#asyncio.run(read_trips()) #run when creating new database
 print("Trips read")
                 
 def read_stop_times():

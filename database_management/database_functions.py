@@ -178,16 +178,16 @@ def is_stop_on_same_route(stop1: Node, stop2: Node) -> bool:
    data = list(database[ROUTES_COLLECTION].find({"stops-reached" : {"$all" : [stop1.gtfs_id, stop2.gtfs_id]}}))
    return len(data) > 0
 
-def find_routes_by_stop_id(stop_id: int) -> list[int]:
+def find_routes_by_stop_id(stop_id: int) -> "list[int]":
     return list(database[ROUTES_COLLECTION].find({"stops-reached" : stop_id},
                                                  {"route-id":1, "route-short-name":1, "stops-reached":1, "_id":0}))
     
-def find_routes_by_stop_id_and_exception_routes(stop_id: int, route_id_list: list = []) -> list[int]:
+def find_routes_by_stop_id_and_exception_routes(stop_id: int, route_id_list: list = []) -> "list[int]":
     return list(database[ROUTES_COLLECTION].find({"$and" :[{"stops-reached" : stop_id,
                                                            "route-id" : {"$nin" : route_id_list}}]},
                                                  {"route-id":1, "route-short-name":1, "stops-reached":1, "_id":0}))
     
-def get_all_routes() -> list[Route]:
+def get_all_routes() -> "list[Route]":
     data =  list(database[ROUTES_COLLECTION].find({}))
     data = [to_route(route) for route in data]
     return data
@@ -198,22 +198,26 @@ def solution_exists_in_db(fromStop: int, toStop: int):
 def upload_solution(solution: dict):
     database[SOLUTIONS_COLLECTION].insert_one(solution)
     
-def add_path_to_solution(fromStop: int, toStop:int, pathway: dict):
+def add_path_to_solution(fromStop: int, toStop:int, pathway: list[dict]):
     database[SOLUTIONS_COLLECTION].update_one({"from-id": fromStop, "to-id": toStop}, 
                                               {"$push": {"changes": pathway}})
     
 def clear_sol():
     database[SOLUTIONS_COLLECTION].delete_many({})
     
-def find_solution_by_from_stop(fromStop: int) -> list[Solution_Holder]:
-    return Solution_Holder.to_dictionary(database[SOLUTIONS_COLLECTION].find({"from-id": fromStop}))
+def find_solution_by_from_stop(fromStop: int) -> "list[Solution_Holder]":
+    return Solution_Holder(database[SOLUTIONS_COLLECTION].find({"from-id": fromStop}))
+
+def find_solution_by_from_stop_and_to_stop(fromStop: int, toStop: int) -> "list[Solution_Holder]":
+    return Solution_Holder(database[SOLUTIONS_COLLECTION].find({"from-id": fromStop,
+                                                                              "to-id": toStop}))
 
 def get_all_solutions():
     data = database[SOLUTIONS_COLLECTION].find({})
     li = []
     for element in data:
         sol = Solution_Holder(element["from-id"], element["to-id"])
-        sol.addChange(element["changes"])
+        sol.addChangeDict(element["changes"])
         li.append(sol)
         
     return li
@@ -234,7 +238,7 @@ def is_there_alternative(fromStop: int, toStop: int, route: int):
     #TODO
     
     
-def get_stopSets_by_fromStop(fromStop: int, route: int) -> list:
+def get_stopSets_by_fromStop(fromStop: int, route: list) -> list:
     data =  database[SOLUTIONS_COLLECTION].find({
         "from-id": fromStop,
         "changes" : {
@@ -253,6 +257,15 @@ def get_stopSets_by_fromStop(fromStop: int, route: int) -> list:
     candidates = []
     for pair in data:
         for change_set in pair:
-            if all(change_pair["route-id"] != route for change_pair in change_set):
+            if all(change_pair["route-id"] not in route for change_pair in change_set):
                 candidates.append(change_set)
     return candidates
+
+
+def get_edge_transferTimes(fromStop: int, toStop: int):
+    return list(database[EDGES_COLLECTION].find({
+        "from-stop": fromStop,
+        "to-stop" : toStop
+    },{
+        "_id": 0, "travelling-time-mins" : 1, "travelling-time-secs" : 1
+    }))
