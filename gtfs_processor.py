@@ -106,12 +106,12 @@ async def stoplist_method_appending():
                 #if len(addonStop) > 1:
                     #print(addonStop)
                 for stopSet in addonStop:
-                    solutionGenerated.add(baseStop.get_header())
-                    solutionGenerated.add((stopSet['from-stop-partial'],stopSet['to-stop-partial']))
                     for change in baseStop.changes:
                         for changeSet in change:
                             newElement = changeSet + [stopSet]
                             if passesCriteria(newElement):
+                                solutionGenerated.add(baseStop.get_header())
+                                solutionGenerated.add((stopSet['from-stop-partial'],stopSet['to-stop-partial']))
                                 if database_functions.solution_exists_in_db(baseStop.fromStop, stopSet['to-stop-partial']):
                                     # if len(newElement) > 2:
                                     #     print(newElement)
