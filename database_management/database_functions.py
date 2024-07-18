@@ -199,7 +199,14 @@ def upload_solution(solution: dict):
     database[SOLUTIONS_COLLECTION].insert_one(solution)
     
 def add_path_to_solution(fromStop: int, toStop:int, pathway: list[dict]):
-    database[SOLUTIONS_COLLECTION].update_one({"from-id": fromStop, "to-id": toStop}, 
+    if database[SOLUTIONS_COLLECTION].find_one({"changes" : {
+        "$elemMatch" : {
+            "$all": [
+                    {"$elemMatch": part} for part in pathway
+                ]
+        }
+    }}) is None:
+        database[SOLUTIONS_COLLECTION].update_one({"from-id": fromStop, "to-id": toStop}, 
                                               {"$push": {"changes": pathway}})
     
 def clear_sol():
@@ -269,3 +276,20 @@ def get_edge_transferTimes(fromStop: int, toStop: int):
     },{
         "_id": 0, "travelling-time-mins" : 1, "travelling-time-secs" : 1
     }))
+    
+def is_node_parent(gtfs_id: int):
+    return len(list(database[NODES_COLLECTION].find({"$and": 
+        [{"gtfs-id": gtfs_id}, {"children": {"$exists" : True}}]
+        }))) > 0
+    
+def get_node_children(gtfs_id: int):
+    return database[NODES_COLLECTION].find(
+        {"gtfs-id": gtfs_id},
+        {"_id": 0, "children" : 1}
+    )
+    
+def get_node_siblings(gtfs_id:int):
+    return database[NODES_COLLECTION].find(
+        {"children": gtfs_id},
+        {"_id": 0, "children" : 1}
+    )

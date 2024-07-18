@@ -3,10 +3,10 @@ from graph_elements.route import Route
 from graph_elements.trip import Trip
 from graph_elements.edge import Edge
 from graph_elements.solution_holder import Solution_Holder
-from itertools import combinations
 import database_management.database_functions as database_functions
 import asyncio
 from statistics import mean
+import math
 
 
 MAX_CHANGES = 5
@@ -19,18 +19,48 @@ def is_close(first_stop: Node, second_stop: Node):
      #The average walking speed understood in km/h
     distance = first_stop.calculate_dist(second_stop)
     return round((distance / WALK_SPEED)*60) <= 2 #the time it takes to walk the distance
+
+def haversine(coord_a, coord_b):
+    R = 6371.0  # Earth radius in kilometers
+    lat1, lon1 = coord_a
+    lat2, lon2 = coord_b
+    dlat = math.radians(lat2 - lat1)
+    dlon = math.radians(lon2 - lon1)
+    a = math.sin(dlat / 2)**2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon / 2)**2
+    return R * (2 * math.asin(math.sqrt(a)))  # Distance in km
+
+def calculate_walking_time(coord_a, coord_b):
+    distance_km = haversine(coord_a, coord_b)
+    return distance_km / 5 * 60  # Walking speed ~5 km/h, return time in minutes
+
+
        
 def passesCriteria(candidate: list[dict]) -> bool:
-    fromNode = database_functions.find_node_by_gtfs_id(candidate[0]["from-stop-partial"])
-    toNode = database_functions.find_node_by_gtfs_id(candidate[-1]["to-stop-partial"])
+    fromNode:Node = database_functions.find_node_by_gtfs_id(candidate[0]["from-stop-partial"])
+    toNode:Node = database_functions.find_node_by_gtfs_id(candidate[-1]["to-stop-partial"])
     if(is_close(fromNode, toNode)):
         return False
     if(len(candidate) > MAX_CHANGES):
         return False
     
     travelTimeMins = sum([candidateMember["travelling-time-mins"] for candidateMember in candidate])
-    if(travelTimeMins > (fromNode.calculate_dist(toNode)/WALK_SPEED*60)*1.5):
+    if(travelTimeMins > (calculate_walking_time((fromNode.latitude, fromNode.longitude), (toNode.latitude, toNode.longitude)))*1.75):
+        #print(travelTimeMins, (calculate_walking_time((fromNode.latitude, fromNode.longitude), (toNode.latitude, toNode.longitude)))*1.75)
         return False
+    
+    for i in range(0, len(candidate)-1):
+        fromNode = candidate[i]["from-stop-partial"]
+        toNode = candidate[i]["to-stop-partial"]
+        nextFromNode = candidate[i+1]["from-stop-partial"]
+        
+        if database_functions.is_node_parent(fromNode) or \
+            database_functions.is_node_parent(toNode):
+                return False
+            
+        if toNode != nextFromNode and \
+            toNode not in database_functions.get_node_siblings(nextFromNode):
+                return False
+        
 
     return True
 
@@ -73,8 +103,8 @@ async def stoplist_method_appending():
         solutionGenerated = set()
         for baseStop in solutions:
             for addonStop in database_functions.get_stopSets_by_fromStop(baseStop.toStop, baseStop.getRoutes()):
-                if len(addonStop) > 1:
-                    print(addonStop)
+                #if len(addonStop) > 1:
+                    #print(addonStop)
                 for stopSet in addonStop:
                     solutionGenerated.add(baseStop.get_header())
                     solutionGenerated.add((stopSet['from-stop-partial'],stopSet['to-stop-partial']))
@@ -83,8 +113,10 @@ async def stoplist_method_appending():
                             newElement = changeSet + [stopSet]
                             if passesCriteria(newElement):
                                 if database_functions.solution_exists_in_db(baseStop.fromStop, stopSet['to-stop-partial']):
-                                    #print(newElement)
+                                    # if len(newElement) > 2:
+                                    #     print(newElement)
                                     database_functions.add_path_to_solution(newElement[0]["from-stop-partial"], newElement[-1]["to-stop-partial"],newElement)
+                                    pass
                                 else:
                                     newSolution = Solution_Holder(newElement[0]["from-stop-partial"], newElement[-1]["to-stop-partial"])
                                     newSolution.addChangeDict(newElement)

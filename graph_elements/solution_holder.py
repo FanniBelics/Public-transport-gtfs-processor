@@ -32,6 +32,10 @@ class Solution_Holder():
         for changes in self.changes:
             changeSetList = []
             for change_element in changes:
+                if type(change_element) == dict:
+                    changesList = self.changes
+                    return changesList
+                
                 changeSetList.append(
                     {
                         "from-stop-partial" : change_element.fromStop,
