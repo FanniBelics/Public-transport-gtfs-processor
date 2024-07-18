@@ -96,9 +96,9 @@ print("Singles uploaded")
     
 
 async def stoplist_method_appending():
-    solutions = database_functions.get_all_solutions()
-    solutionGenerated = set([solution.get_header() for solution in solutions])
     while len(solutionGenerated) > 0:
+        solutions = database_functions.get_all_solutions()
+        solutionGenerated = set([solution.get_header() for solution in solutions])
         solutions = [solution for solution in solutions if solution.get_header() in solutionGenerated]
         solutionGenerated = set()
         for baseStop in solutions:
