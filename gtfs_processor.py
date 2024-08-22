@@ -89,17 +89,17 @@ async def stoplist_method_singles():
                         database_functions.upload_solution(parent.to_dictionary())
  
 print("Uploading single solutions...")       
-#database_functions.clear_sol()
+database_functions.clear_sol()
 print("Cleared")
-#asyncio.run(stoplist_method_singles())
+asyncio.run(stoplist_method_singles())
 print("Singles uploaded")
     
 
 async def stoplist_method_appending():
-    solutionGenerated = ["dummyElement"]
+    solutions = database_functions.get_all_solutions()
+    solutionGenerated = set([solution.get_header() for solution in solutions])
     while len(solutionGenerated) > 0:
         solutions = database_functions.get_all_solutions()
-        solutionGenerated = set([solution.get_header() for solution in solutions])
         solutions = [solution for solution in solutions if solution.get_header() in solutionGenerated]
         solutionGenerated = set()
         for baseStop in solutions:

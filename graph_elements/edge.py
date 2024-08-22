@@ -34,8 +34,8 @@ class Edge():
     def __hash__(self) -> int:
         return hash(self.id)
     
-    def set_distance(self, currentTravelled: int, perviousTravelled: int):
-        self.distance = currentTravelled - perviousTravelled
+    def set_distance(self, currentTravelled: float, perviousTravelled: float):
+        self.distance = abs(currentTravelled - perviousTravelled)
         
     def set_travelling_time(self, current: str, previous: str):
         current_split = [int(n) for n in current.split(':')]

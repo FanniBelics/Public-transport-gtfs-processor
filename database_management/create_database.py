@@ -6,6 +6,7 @@ import os
 
 load_dotenv(find_dotenv())
 
+USERNAME = os.environ.get("MONGODB_USER")
 PASSWORD = os.environ.get("MONGODB_PSW")
 NODES_COLLECTION = str(os.environ.get("COLLECTION_NODE_NAME"))
 EDGES_COLLECTION = os.environ.get("COLLECTION_EDGE_NAME")
@@ -14,15 +15,15 @@ TRIPS_COLLECTION = os.environ.get("COLLECTION_TRIPS_NAME")
 SOLUTIONS_COLLECTION = os.environ.get("COLLECTION_SOLUTIONS_NAME")
 DICTIONARY = os.environ.get("READ_DICTIONARY").lower()
 
-connection_string=f"mongodb+srv://belics_fanni:{PASSWORD}@gtfs2023.7e1cux4.mongodb.net/?retryWrites=true&w=majority&authSource=admin"
+connection_string=f"mongodb+srv://{USERNAME}:{PASSWORD}@gtfs2023.7e1cux4.mongodb.net/?retryWrites=true&w=majority&authSource=admin"
 
 client = MongoClient(connection_string)
 
 database = client[DICTIONARY]
 
-#database.drop_collection(NODES_COLLECTION)
-#database.drop_collection(TRIPS_COLLECTION)
-#database.drop_collection(ROUTES_COLLECTION)
+database.drop_collection(NODES_COLLECTION)
+database.drop_collection(TRIPS_COLLECTION)
+database.drop_collection(ROUTES_COLLECTION)
 
 try:
     database.create_collection(NODES_COLLECTION)

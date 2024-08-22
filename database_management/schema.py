@@ -63,7 +63,7 @@ edge_schema = {
         "required" : ["id", "from-stop", "to-stop", "distance"],
         "properties" : {
             "id" : {
-                "bsonType" : "int",
+                "bsonType" : "long",
                 "description": "Id of the way from one stop to another on one route"
             },
             "from-stop" : {
@@ -131,7 +131,7 @@ edge_schema = {
                        }
             },
             "owner-trip" : {
-                "bsonType" : "int",
+                "bsonType" : "long",
                 "description" : "The trip that specifies this transportation between two stops"
             },
             "owner-route" : {
@@ -189,7 +189,7 @@ route_schema = {
                 "bsonType" : "array",
                 "uniqueItems" : True,
                 "items": {
-                    "bsonType" : "int"
+                    "bsonType" : "long"
                 },
                 "description" : "Array of the trips in the current route"
             }
@@ -204,7 +204,7 @@ trip_schema = {
        "required" : ["trip-id", "route-id", "service-id"],
        "properties" : {
            "trip-id" : {
-               "bsonType" : "int",
+               "bsonType" : "long",
                "description" : "The id given in GTFS files for the current trip"
            },
            "route-id" : {
