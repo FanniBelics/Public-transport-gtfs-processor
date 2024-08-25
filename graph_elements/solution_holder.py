@@ -22,8 +22,7 @@ class Solution_Holder():
         routesIndividual = set()
         for changeSet in self.changes:
             for change in changeSet:
-                for changeElement in change:
-                    routesIndividual.add(changeElement["route-id"])
+                    routesIndividual.add(change["route-id"])
             
         return sorted(routesIndividual)
         

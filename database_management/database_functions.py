@@ -228,7 +228,7 @@ def get_all_solutions():
     li = []
     for element in data:
         sol = Solution_Holder(element["from-id"], element["to-id"])
-        sol.addChangeDict(element["changes"])
+        sol.changes  = element["changes"]
         li.append(sol)
         
     return li
