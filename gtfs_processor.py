@@ -9,7 +9,7 @@ from statistics import mean
 import math
 
 
-MAX_CHANGES = 5
+MAX_CHANGES = 10
 WALK_SPEED = 5
 
 def is_close(first_stop: Node, second_stop: Node):
@@ -89,9 +89,9 @@ async def stoplist_method_singles():
                         database_functions.upload_solution(parent.to_dictionary())
  
 print("Uploading single solutions...")       
-database_functions.clear_sol()
+#database_functions.clear_sol()
 print("Cleared")
-asyncio.run(stoplist_method_singles())
+#asyncio.run(stoplist_method_singles())
 print("Singles uploaded")
     
 
@@ -111,18 +111,20 @@ async def stoplist_method_appending():
                         for changeSet in change:
                             newElement = changeSet + [stopSet]
                             if passesCriteria(newElement):
-                                solutionGenerated.add(baseStop.get_header())
-                                solutionGenerated.add((stopSet['from-stop-partial'],stopSet['to-stop-partial']))
                                 if database_functions.solution_exists_in_db(baseStop.fromStop, stopSet['to-stop-partial']):
                                     # if len(newElement) > 2:
                                     #     print(newElement)
-                                    database_functions.add_path_to_solution(newElement[0]["from-stop-partial"], newElement[-1]["to-stop-partial"],newElement)
-                                    pass
+                                    if(database_functions.add_path_to_solution(newElement[0]["from-stop-partial"], newElement[-1]["to-stop-partial"],newElement)):
+                                        solutionGenerated.add(baseStop.get_header())
+                                        solutionGenerated.add((stopSet['from-stop-partial'],stopSet['to-stop-partial']))
+                                    
                                 else:
                                     newSolution = Solution_Holder(newElement[0]["from-stop-partial"], newElement[-1]["to-stop-partial"])
                                     newSolution.addChangeDict(newElement)
                                     #print(newSolution)
                                     database_functions.upload_solution(newSolution.to_dictionary())
+                                    solutionGenerated.add(baseStop.get_header())
+                                    solutionGenerated.add((stopSet['from-stop-partial'],stopSet['to-stop-partial']))
 
 print("Uploading multiples")
 asyncio.run(stoplist_method_appending())

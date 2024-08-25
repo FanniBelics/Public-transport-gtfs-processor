@@ -209,6 +209,9 @@ def add_path_to_solution(fromStop: int, toStop:int, pathway: list[dict]):
     }}) is None:
         database[SOLUTIONS_COLLECTION].update_one({"from-id": fromStop, "to-id": toStop}, 
                                               {"$push": {"changes": pathway}})
+        return True
+    return False
+        
     
 def clear_sol():
     database[SOLUTIONS_COLLECTION].delete_many({})
