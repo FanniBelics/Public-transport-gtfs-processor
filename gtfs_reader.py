@@ -32,7 +32,11 @@ async def read_stops():
     
     async with aiofiles.open (full_path + "/stops.txt", encoding="utf-8") as stops_txt:
         async for stop in AsyncDictReader(stops_txt, delimiter = ","):
-            newNode = Node(stop["stop_id"],stop["stop_name"],"",stop["stop_desc"],stop["stop_lon"],stop["stop_lat"])
+            if("stop_shortname" not in stop.keys):
+                shortname = ""
+            else:
+                shortname = stop["stop_shortname"]
+            newNode = Node(stop["stop_id"],stop["stop_name"],shortname,stop["stop_desc"],stop["stop_lon"],stop["stop_lat"])
             database_functions.upload_node_to_database(newNode)
             if stop["parent_station"] != '':
                 newNode.set_parental_node(database_functions.find_node_by_gtfs_id(stop["parent_station"]))
@@ -78,33 +82,33 @@ print("Trips read")
 def read_stop_times():
     with open(full_path + "/stop_times.txt", encoding="utf-8") as stop_times:
         oldEdge = Edge(0,0,0)
-        for stop_time in csv.reader(stop_times):
-            if stop_time[0] != "trip_id":
+        for stop_time in csv.DictReader(stop_times):
+            if stop_time["trip_id"] != "trip_id":
                 
-                id = stop_time[0] + "_" + stop_time[1]
-                newEdge = Edge(id, oldEdge.toStop, stop_time[2])
-                newEdge.set_departure_time(stop_time[4])
-                newEdge.set_owner_trip(int(stop_time[0]))
+                id = stop_time['trip_id'] + "_" + stop_time['stop_sequence']
+                newEdge = Edge(id, oldEdge.toStop, stop_time['stop_id'])
+                newEdge.set_departure_time(stop_time['departure_time'])
+                newEdge.set_owner_trip(int(stop_time['trip_id']))
                 
                 
-                if stop_time[10] == "0":
-                    trip = database_functions.find_trip_by_id(int(stop_time[0]))
+                if stop_time['shape_dist_traveled'] == "0":
+                    trip = database_functions.find_trip_by_id(int(stop_time['trip_id']))
                     route = database_functions.find_route_by_id(trip.route_id)
                     newEdge.set_owner_route(route.route_id)
-                    newEdge.set_arrival_time(stop_time[3])
+                    newEdge.set_arrival_time(stop_time['arrival_time'])
                     newEdge.set_distance(0,0)
                     
                 else:
                     newEdge.set_arrival_time(oldEdge.get_departure_time())
                     newEdge.set_owner_route(route.route_id)
-                    newEdge.set_travelling_time(stop_time[3], oldEdge.get_departure_time())
-                    newEdge.set_distance(float(stop_time[10]), oldEdge.distance)
+                    newEdge.set_travelling_time(stop_time['arrival_time'], oldEdge.get_departure_time())
+                    newEdge.set_distance(float(stop_time['shape_dist_traveled']), oldEdge.distance)
                     database_functions.upload_edge_to_database(newEdge)
                 
                 oldEdge = newEdge
-                trip.add_reached_stop(stop_time[2], stop_time[3])
-                route.add_stop(stop_time[2])
-                database_functions.add_stop_to_route(route.route_id, stop_time[2])
+                trip.add_reached_stop(stop_time['stop_id'], stop_time['arrival_time'])
+                route.add_stop(stop_time['stop_id'])
+                database_functions.add_stop_to_route(route.route_id, stop_time['stop_id'])
                 database_functions.add_stop_to_trip(trip.trip_id, trip.stops_reached[-1])
 
 print("Reading stop times...")
