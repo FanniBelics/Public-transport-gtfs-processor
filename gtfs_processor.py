@@ -44,8 +44,7 @@ def passesCriteria(candidate: list[dict]) -> bool:
         return False
     
     travelTimeMins = sum([candidateMember["travelling-time-mins"] for candidateMember in candidate])
-    if(travelTimeMins > (calculate_walking_time((fromNode.latitude, fromNode.longitude), (toNode.latitude, toNode.longitude)))*1.75):
-        #print(travelTimeMins, (calculate_walking_time((fromNode.latitude, fromNode.longitude), (toNode.latitude, toNode.longitude)))*1.75)
+    if(travelTimeMins > (calculate_walking_time((fromNode.latitude, fromNode.longitude), (toNode.latitude, toNode.longitude)))*2.5):
         return False
     
     for i in range(0, len(candidate)-1):
@@ -104,14 +103,10 @@ async def stoplist_method_appending():
         solutionGenerated = set()
         for baseStop in solutions:
             for addonStop in database_functions.get_stopSets_by_fromStop(baseStop.toStop, baseStop.getRoutes()):
-                #if len(addonStop) > 1:
-                    #print(addonStop)
                     for change in baseStop.changes:
                             newElement = change + addonStop
                             if passesCriteria(newElement):
                                 if database_functions.solution_exists_in_db(baseStop.fromStop, addonStop[-1]['to-stop-partial']):
-                                    # if len(newElement) > 2:
-                                    #     print(newElement)
                                     if(database_functions.add_path_to_solution(newElement[0]["from-stop-partial"], newElement[-1]["to-stop-partial"],change)):
                                         solutionGenerated.add(baseStop.get_header())
                                         solutionGenerated.add((addonStop[0]['from-stop-partial'],addonStop[-1]['to-stop-partial']))
@@ -119,10 +114,9 @@ async def stoplist_method_appending():
                                 else:
                                     newSolution = Solution_Holder(newElement[0]["from-stop-partial"], newElement[-1]["to-stop-partial"])
                                     newSolution.addChangeDict(newElement)
-                                    #print(newSolution)
                                     database_functions.upload_solution(newSolution.to_dictionary())
                                     solutionGenerated.add(baseStop.get_header())
-                                    solutionGenerated.add(addonStop.get_header())
+                                    solutionGenerated.add((newElement[0]["from-stop-partial"], newElement[-1]["to-stop-partial"]))
 
 print("Uploading multiples")
 asyncio.run(stoplist_method_appending())
