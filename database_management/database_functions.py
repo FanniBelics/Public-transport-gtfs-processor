@@ -297,3 +297,15 @@ def get_node_siblings(gtfs_id:int):
         {"children": gtfs_id},
         {"_id": 0, "children" : 1}
     )
+    
+def get_solutions_with_siblings(siblings: list):
+    data =  database[SOLUTIONS_COLLECTION].find(
+        {"from-id": {"$in": siblings}},
+        {"changes" : 1,"_id" : 0})
+    
+    data = [changes["changes"] for changes in data]
+    candidates = []
+    for pair in data:
+        for change_set in pair:
+                candidates.append(change_set)
+    return candidates

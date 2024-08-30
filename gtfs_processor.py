@@ -57,11 +57,33 @@ def passesCriteria(candidate: list[dict]) -> bool:
                 return False
             
         if toNode != nextFromNode and \
-            toNode not in database_functions.get_node_siblings(nextFromNode):
+            toNode not in list(database_functions.get_node_siblings(nextFromNode))[0]['children']:
                 return False
         
 
     return True
+
+def get_siblings(node: int) -> list[int]:
+    if(not database_functions.is_node_parent(node)):
+        return database_functions.get_node_siblings(node)
+    
+    return None
+
+def get_ways_with_stop_change(node: int) -> list[int]:
+    siblings = list(get_siblings(node))
+    if(siblings is None):
+        return []
+    
+    siblingList = []
+    for document in siblings:
+        siblingList += document.get("children", [])
+    
+    if(node in siblingList):
+        siblingList.remove(node)
+    
+    return database_functions.get_solutions_with_siblings(siblingList)
+
+
 
 async def stoplist_method_singles():
     routes = database_functions.get_all_routes()
@@ -88,9 +110,9 @@ async def stoplist_method_singles():
                         database_functions.upload_solution(parent.to_dictionary())
  
 print("Uploading single solutions...")       
-#database_functions.clear_sol()
+database_functions.clear_sol()
 print("Cleared")
-#asyncio.run(stoplist_method_singles())
+asyncio.run(stoplist_method_singles())
 print("Singles uploaded")
     
 
@@ -102,12 +124,15 @@ async def stoplist_method_appending():
         solutions = [solution for solution in solutions if solution.get_header() in solutionGenerated]
         solutionGenerated = set()
         for baseStop in solutions:
-            for addonStop in database_functions.get_stopSets_by_fromStop(baseStop.toStop, baseStop.getRoutes()):
+            ownStops = database_functions.get_stopSets_by_fromStop(baseStop.toStop, baseStop.getRoutes())
+            siblingStops = get_ways_with_stop_change(baseStop.toStop)
+            addonSources = ownStops + siblingStops
+            for addonStop in addonSources:
                     for change in baseStop.changes:
                             newElement = change + addonStop
                             if passesCriteria(newElement):
                                 if database_functions.solution_exists_in_db(baseStop.fromStop, addonStop[-1]['to-stop-partial']):
-                                    if(database_functions.add_path_to_solution(newElement[0]["from-stop-partial"], newElement[-1]["to-stop-partial"],change)):
+                                    if(database_functions.add_path_to_solution(newElement[0]["from-stop-partial"], newElement[-1]["to-stop-partial"],newElement)):
                                         solutionGenerated.add(baseStop.get_header())
                                         solutionGenerated.add((addonStop[0]['from-stop-partial'],addonStop[-1]['to-stop-partial']))
                                     
@@ -119,6 +144,6 @@ async def stoplist_method_appending():
                                     solutionGenerated.add((newElement[0]["from-stop-partial"], newElement[-1]["to-stop-partial"]))
 
 print("Uploading multiples")
-asyncio.run(stoplist_method_appending())
+#asyncio.run(stoplist_method_appending())
 print("Multiples uploaded")
 
