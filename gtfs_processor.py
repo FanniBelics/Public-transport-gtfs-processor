@@ -47,6 +47,10 @@ def passesCriteria(candidate: list[dict]) -> bool:
     if(travelTimeMins > (calculate_walking_time((fromNode.latitude, fromNode.longitude), (toNode.latitude, toNode.longitude)))*2.5):
         return False
     
+    routesAppeared = [stop['route-id'] for stop in candidate]
+    if(len(set(routesAppeared)) < len(routesAppeared)):
+        return False
+    
     for i in range(0, len(candidate)-1):
         fromNode = candidate[i]["from-stop-partial"]
         toNode = candidate[i]["to-stop-partial"]
