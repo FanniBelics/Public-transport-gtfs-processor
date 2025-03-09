@@ -13,6 +13,7 @@ load_dotenv(find_dotenv())
 
 USERNAME = os.environ.get("MONGODB_USER")
 PASSWORD = os.environ.get("MONGODB_PSW")
+IP = os.environ.get("MONGODB_IP")
 NODES_COLLECTION = str(os.environ.get("COLLECTION_NODE_NAME"))
 EDGES_COLLECTION = os.environ.get("COLLECTION_EDGE_NAME")
 ROUTES_COLLECTION = os.environ.get("COLLECTION_ROUTES_NAME")
@@ -21,7 +22,7 @@ DICTIONARY = os.environ.get("READ_DICTIONARY").lower()
 SOLUTIONS_COLLECTION = os.environ.get("COLLECTION_SOLUTIONS_NAME")
 
 
-connection_string=f"mongodb+srv://{USERNAME}:{PASSWORD}@gtfs2023.7e1cux4.mongodb.net/?retryWrites=true&w=majority&authSource=admin"
+connection_string=f"mongodb://{USERNAME}:{PASSWORD}@{IP}/?retryWrites=true&w=majority&authSource=admin"
 
 client = MongoClient(connection_string)
 
@@ -66,6 +67,8 @@ def to_trip(candidate: dict) -> Trip:
     trip = Trip(candidate["trip-id"], candidate["route-id"],
                 candidate["service-id"], candidate["trip_headsign"])
     trip.add_direction(candidate["direction-id"])
+    
+    trip.stops_reached = candidate["stops-reached"]
     
     return trip
 
@@ -246,7 +249,6 @@ def is_there_alternative(fromStop: int, toStop: int, route: int):
                     }
             }}):
             return True
-    #TODO
     
     
 def get_stopSets_by_fromStop(fromStop: int, route: list) -> list:
@@ -272,6 +274,23 @@ def get_stopSets_by_fromStop(fromStop: int, route: list) -> list:
                 candidates.append(change_set)
     return candidates
 
+def get_all_trips():
+    data =  list(database[TRIPS_COLLECTION].find({}))
+    data = [to_trip(trip) for trip in data]
+    return data
+
+def remove_departure_time_from_edge(edge_id):
+    database[EDGES_COLLECTION].update_one({"id": edge_id},
+                                          {"$unset": {"departure-time": ""}})
+    
+def add_arrival_time_to_edge(edge_id, arrival_time):
+    h,m,s = arrival_time.split(":")
+    database[EDGES_COLLECTION].update_one({"id": edge_id},
+                                          {"$set": {"arrival-time": {
+                                              "hour": int(h),
+                                              "minute": int(m),
+                                              "second": int(s)
+                                          }}})
 
 def get_edge_transferTimes(fromStop: int, toStop: int):
     return list(database[EDGES_COLLECTION].find({
@@ -279,6 +298,15 @@ def get_edge_transferTimes(fromStop: int, toStop: int):
         "to-stop" : toStop
     },{
         "_id": 0, "travelling-time-mins" : 1, "travelling-time-secs" : 1
+    }))
+    
+def get_edges_by_stops_and_and_trip(fromStop: int, toStop: int, trip: int):
+    return list(database[EDGES_COLLECTION].find({
+        "from-stop": fromStop,
+        "to-stop" : toStop,
+        "owner-trip" : trip
+    },{
+        "_id": 0
     }))
     
 def is_node_parent(gtfs_id: int):

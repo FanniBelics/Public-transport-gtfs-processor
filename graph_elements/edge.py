@@ -37,6 +37,9 @@ class Edge():
     def set_distance(self, currentTravelled: float, perviousTravelled: float):
         self.distance = abs(currentTravelled - perviousTravelled)
         
+    def set_from_stop(self, fromStop):
+        self.fromStop = fromStop
+        
     def set_travelling_time(self, current: str, previous: str):
         current_split = [int(n) for n in current.split(':')]
         previous_split = [int(n) for n in previous.split(':')]
@@ -75,7 +78,7 @@ class Edge():
         
     def to_dictionary(self) -> dict:
         data = {
-            "id" : int(self.id),
+            "id" : self.id,
             "from-stop" : int(self.fromStop),
             "to-stop" : int(self.toStop),
             "distance" : float(self.distance),
@@ -85,11 +88,6 @@ class Edge():
                 "hour" : int(self.departure_h),
                 "minute" : int(self.departure_m),
                 "second" : int(self.departure_s)
-            },
-            "arrival-time" : {
-                "hour" : int(self.arrival_h),
-                "minute" : int(self.arrival_m),
-                "second" : int(self.arrival_s)
             },
             "owner-trip" : int(self.owner_trip),
             "owner-route" : int(self.owner_route)

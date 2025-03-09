@@ -18,7 +18,7 @@ def is_close(first_stop: Node, second_stop: Node):
     
      #The average walking speed understood in km/h
     distance = first_stop.calculate_dist(second_stop)
-    return round((distance / WALK_SPEED)*60) <= 2 #the time it takes to walk the distance
+    return round((distance / WALK_SPEED)*60) <= 5 #the time it takes to walk the distance
 
 def haversine(coord_a, coord_b):
     R = 6371.0  # Earth radius in kilometers
@@ -33,35 +33,67 @@ def calculate_walking_time(coord_a, coord_b):
     distance_km = haversine(coord_a, coord_b)
     return distance_km / 5 * 60  # Walking speed ~5 km/h, return time in minutes
 
+def calculate_complete_time(from_time: dict, to_time: dict) -> int:
+    return (to_time["hour"] - from_time["hour"])*60 + to_time["minute"] - from_time["minute"]
+
+def isTimingCorrect(candidate: list[dict]) -> bool:
+    for i in range(0, len(candidate)-1):
+       if candidate[i]["to-stop-partial"]["stop-time"]["hour"] > candidate[i+1]["from-stop-partial"]["stop-time"]["hour"]:
+           return False
+       
+       changingTimeMins = (candidate[i+1]["from-stop-partial"]["stop-time"]["hour"] - candidate[i]["to-stop-partial"]["stop-time"]["hour"])*60 + candidate[i+1]["from-stop-partial"]["stop-time"]["minute"] - candidate[i]["to-stop-partial"]["stop-time"]["minute"]
+       if(changingTimeMins < 1 or changingTimeMins > 30):
+           return False
+       
+       
+    return True
 
        
 def passesCriteria(candidate: list[dict]) -> bool:
-    fromNode:Node = database_functions.find_node_by_gtfs_id(candidate[0]["from-stop-partial"])
-    toNode:Node = database_functions.find_node_by_gtfs_id(candidate[-1]["to-stop-partial"])
+    fromNode:Node = database_functions.find_node_by_gtfs_id(candidate[0]["from-stop-partial"]["stop_id"])
+    toNode:Node = database_functions.find_node_by_gtfs_id(candidate[-1]["to-stop-partial"]["stop_id"])
     if(is_close(fromNode, toNode)):
         return False
     if(len(candidate) > MAX_CHANGES):
         return False
+
+
+    # travelTimeMins = sum([candidateMember["travelling-time-mins"] for candidateMember in candidate])
+    # if(travelTimeMins > (calculate_walking_time((fromNode.latitude, fromNode.longitude), (toNode.latitude, toNode.longitude)))*2.5):
+    #     return False
+        
+    if(not isTimingCorrect(candidate)):
+        return False
     
-    travelTimeMins = sum([candidateMember["travelling-time-mins"] for candidateMember in candidate])
-    if(travelTimeMins > (calculate_walking_time((fromNode.latitude, fromNode.longitude), (toNode.latitude, toNode.longitude)))*2.5):
+    if(calculate_complete_time(candidate[0]["from-stop-partial"]["stop-time"], candidate[-1]["to-stop-partial"]["stop-time"]) > 
+       calculate_walking_time((fromNode.latitude, fromNode.longitude), (toNode.latitude, toNode.longitude))*2):
         return False
     
     routesAppeared = [stop['route-id'] for stop in candidate]
     if(len(set(routesAppeared)) < len(routesAppeared)):
         return False
     
+    for stop in candidate:
+        currentPartian = stop["from-stop-partial"]["stop_id"]
+        mainSiblinbs = list(get_siblings(currentPartian)[0]["children"])
+        if mainSiblinbs is not None:
+            mainSiblinbs.remove(currentPartian)
+            fromNodes = [from_stop["from-stop-partial"]["stop_id"] for from_stop in candidate]
+            if set(mainSiblinbs).intersection(fromNodes):
+                return False
+        
+    
     for i in range(0, len(candidate)-1):
         fromNode = candidate[i]["from-stop-partial"]
         toNode = candidate[i]["to-stop-partial"]
         nextFromNode = candidate[i+1]["from-stop-partial"]
         
-        if database_functions.is_node_parent(fromNode) or \
-            database_functions.is_node_parent(toNode):
+        if database_functions.is_node_parent(fromNode["stop_id"]) or \
+            database_functions.is_node_parent(toNode["stop_id"]):
                 return False
             
-        if toNode != nextFromNode and \
-            toNode not in list(database_functions.get_node_siblings(nextFromNode))[0]['children']:
+        if toNode['stop_id'] != nextFromNode['stop_id'] and \
+            toNode['stop_id'] not in list(database_functions.get_node_siblings(nextFromNode['stop_id']))[0]['children']:
                 return False
         
 
@@ -90,33 +122,32 @@ def get_ways_with_stop_change(node: int) -> list[int]:
 
 
 async def stoplist_method_singles():
-    routes = database_functions.get_all_routes()
-    for route in routes: 
-        for stop in route.stops:
-            pivot_list = route.stops[route.stops.index(stop) +1 : -1]
+    trips = database_functions.get_all_trips() #Swao with trips -> based on time
+    for trip in trips: 
+        for stop in trip.stops_reached:
+            pivot_list = trip.stops_reached[trip.stops_reached.index(stop) +1 : -1]
             for pair_stop in pivot_list:
-                if not is_close(database_functions.find_node_by_gtfs_id(stop), database_functions.find_node_by_gtfs_id(pair_stop)):
-                    stopsBetween = route.stops[route.stops.index(stop): route.stops.index(pair_stop)+1]
+                if not is_close(database_functions.find_node_by_gtfs_id(stop['stop_id']), database_functions.find_node_by_gtfs_id(pair_stop['stop_id'])):                    
+                    parent = Solution_Holder(stop['stop_id'], pair_stop['stop_id'])
                     
-                    parent = Solution_Holder(stop, pair_stop)
-                    travelling_time = 0
-                    for i in range(len(stopsBetween)-1):
-                        transfertimes = database_functions.get_edge_transferTimes(stopsBetween[i], stopsBetween[i+1])
-                        if(len(transfertimes) > 0):
-                            travelling_time += round(mean([time["travelling-time-mins"] + time["travelling-time-secs"]/60 
-                                        for time in transfertimes]))
+                    #Find representing edges for the stops
+                    edges = database_functions.get_edges_by_stops_and_and_trip(stop['stop_id'], pair_stop['stop_id'], trip.trip_id)
+                    for edge in edges:
+                        #Calculate the time it takes to travel between the stops
+                        parent.addChange(stop, pair_stop, edge['owner-route'], 
+                                         edge['travelling-time-mins'], edge['departure-time'], edge['arrival-time'])
+                        if database_functions.solution_exists_in_db(stop, pair_stop):
+                            database_functions.add_path_to_solution(stop, pair_stop, parent.create_inner_dict()[-1])
                         else:
-                            travelling_time = 2
-                    parent.addChange(stop, pair_stop, route.route_id, travelling_time)
-                    if database_functions.solution_exists_in_db(stop, pair_stop):
-                        database_functions.add_path_to_solution(stop, pair_stop, parent.create_inner_dict()[-1])
-                    else:
-                        database_functions.upload_solution(parent.to_dictionary())
+                            database_functions.upload_solution(parent.to_dictionary())
+
+                    
+                    
  
 print("Uploading single solutions...")       
-database_functions.clear_sol()
+#database_functions.clear_sol()
 print("Cleared")
-asyncio.run(stoplist_method_singles())
+#asyncio.run(stoplist_method_singles())
 print("Singles uploaded")
     
 
@@ -135,19 +166,19 @@ async def stoplist_method_appending():
                     for change in baseStop.changes:
                             newElement = change + addonStop
                             if passesCriteria(newElement):
-                                if database_functions.solution_exists_in_db(baseStop.fromStop, addonStop[-1]['to-stop-partial']):
-                                    if(database_functions.add_path_to_solution(newElement[0]["from-stop-partial"], newElement[-1]["to-stop-partial"],newElement)):
+                                if database_functions.solution_exists_in_db(baseStop.fromStop, addonStop[-1]['to-stop-partial']["stop_id"]):
+                                    if(database_functions.add_path_to_solution(newElement[0]["from-stop-partial"]["stop_id"], newElement[-1]["to-stop-partial"]["stop_id"],newElement)):
                                         solutionGenerated.add(baseStop.get_header())
-                                        solutionGenerated.add((addonStop[0]['from-stop-partial'],addonStop[-1]['to-stop-partial']))
+                                        solutionGenerated.add((addonStop[0]['from-stop-partial']["stop_id"],addonStop[-1]['to-stop-partial']["stop_id"]))
                                     
                                 else:
-                                    newSolution = Solution_Holder(newElement[0]["from-stop-partial"], newElement[-1]["to-stop-partial"])
+                                    newSolution = Solution_Holder(newElement[0]["from-stop-partial"]["stop_id"], newElement[-1]["to-stop-partial"]["stop_id"])
                                     newSolution.addChangeDict(newElement)
                                     database_functions.upload_solution(newSolution.to_dictionary())
                                     solutionGenerated.add(baseStop.get_header())
-                                    solutionGenerated.add((newElement[0]["from-stop-partial"], newElement[-1]["to-stop-partial"]))
+                                    solutionGenerated.add((newElement[0]["from-stop-partial"]["stop_id"], newElement[-1]["to-stop-partial"]["stop_id"]))
 
 print("Uploading multiples")
-#asyncio.run(stoplist_method_appending())
+asyncio.run(stoplist_method_appending())
 print("Multiples uploaded")
 

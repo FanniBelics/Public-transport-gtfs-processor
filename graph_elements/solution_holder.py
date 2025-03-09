@@ -9,10 +9,12 @@ class Solution_Holder():
     def addRoute(self, route):
         self.route = route
     
-    def addChange(self, fromStop, toStop, route, time):
+    def addChange(self, fromStop, toStop, route, time, departureTime, arrivalToNextStop):
         changeStructure = Solution_Holder(fromStop, toStop)
         changeStructure.addRoute(route)
         changeStructure.add_travelling_time(time)
+        changeStructure.addDepartureTime(departureTime)
+        changeStructure.addArrivalToNextStop(arrivalToNextStop)
         self.changes.append([changeStructure])
         
     def addChangeDict(self, newPart):
@@ -62,3 +64,13 @@ class Solution_Holder():
     
     def add_travelling_time(self, time_in_mins: int):
         self.travellingTime += time_in_mins
+        
+    def addDepartureTime(self, time):
+        self.departure_h = time['hour']
+        self.departure_m = time['minute']
+        self.departure_s = time['second']
+        
+    def addArrivalToNextStop(self, time):
+        self.arrival_h = time['hour']
+        self.arrival_m = time['minute']
+        self.arrival_s = time['second']

@@ -23,10 +23,49 @@ result_schema = {
                             "properties" : 
                                 {
                                 "from-stop-partial" : {
-                                "bsonType" : "int"
+                                "bsonType" : "object",
+                                "properties" : {
+                                    "stop_id": {
+                                        "bsonType": "int"
+                                    },
+                                    "stop-time": {
+                                        "bsonType": "object",
+                                        "properties":{
+                                            "hour": {
+                                                "bsonType": "int"
+                                            },
+                                            "minute": {
+                                                "bsonType": "int"
+                                            },
+                                            "second": {
+                                                "bsonType": "int"
+                                            }
+                                        }
+                                    }
+                                }
                                 },
                                 "to-stop-partial" : {
-                                "bsonType" : "int"
+                                "bsonType" : "object",
+                                "properties" : {
+                                    "stop_id": {
+                                        "bsonType": "int"
+                                    },
+                                    "stop-time": {
+                                        "bsonType": "object",
+                                        "properties":{
+                                            "hour": {
+                                                "bsonType": "int"
+                                            },
+                                            "minute": {
+                                                "bsonType": "int"
+                                            },
+                                            "second": {
+                                                "bsonType": "int"
+                                            }
+                                        }
+                                    }
+                                }
+                                
                                 },
                                 "route-id" : {
                                 "bsonType" : "int"
