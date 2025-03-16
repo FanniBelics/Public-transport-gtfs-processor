@@ -138,8 +138,8 @@ async def stoplist_method_singles():
                         route_name = database_functions.get_route_name_by_id(edge['owner-route'])
                         parent.addChange(stop, parent.fromStopName, pair_stop, parent.toStopName, edge['owner-route'], route_name,
                                          edge['travelling-time-mins'], edge['departure-time'], edge['arrival-time'])
-                        if database_functions.solution_exists_in_db(stop, pair_stop):
-                            database_functions.add_path_to_solution(stop, pair_stop, parent.create_inner_dict()[-1])
+                        if database_functions.solution_exists_in_db(stop['stop_id'], pair_stop['stop_id']):
+                            database_functions.add_path_to_solution(stop['stop_id'], pair_stop['stop_id'], parent.create_inner_dict()[-1])
                         else:
                             database_functions.upload_solution(parent.to_dictionary())
 
@@ -147,9 +147,9 @@ async def stoplist_method_singles():
                     
  
 print("Uploading single solutions...")       
-#database_functions.clear_sol()
+database_functions.clear_sol()
 print("Cleared")
-#asyncio.run(stoplist_method_singles())
+asyncio.run(stoplist_method_singles())
 print("Singles uploaded")
     
 
