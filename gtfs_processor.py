@@ -129,12 +129,14 @@ async def stoplist_method_singles():
             for pair_stop in pivot_list:
                 if not is_close(database_functions.find_node_by_gtfs_id(stop['stop_id']), database_functions.find_node_by_gtfs_id(pair_stop['stop_id'])):                    
                     parent = Solution_Holder(stop['stop_id'], pair_stop['stop_id'])
-                    
+                    parent.addFromStopName(database_functions.get_stop_name_by_id(stop['stop_id']))
+                    parent.addToStopName(database_functions.get_stop_name_by_id(pair_stop['stop_id']))
                     #Find representing edges for the stops
                     edges = database_functions.get_edges_by_stops_and_and_trip(stop['stop_id'], pair_stop['stop_id'], trip.trip_id)
                     for edge in edges:
                         #Calculate the time it takes to travel between the stops
-                        parent.addChange(stop, pair_stop, edge['owner-route'], 
+                        route_name = database_functions.get_route_name_by_id(edge['owner-route'])
+                        parent.addChange(stop, parent.fromStopName, pair_stop, parent.toStopName, edge['owner-route'], route_name,
                                          edge['travelling-time-mins'], edge['departure-time'], edge['arrival-time'])
                         if database_functions.solution_exists_in_db(stop, pair_stop):
                             database_functions.add_path_to_solution(stop, pair_stop, parent.create_inner_dict()[-1])
@@ -174,6 +176,8 @@ async def stoplist_method_appending():
                                 else:
                                     newSolution = Solution_Holder(newElement[0]["from-stop-partial"]["stop_id"], newElement[-1]["to-stop-partial"]["stop_id"])
                                     newSolution.addChangeDict(newElement)
+                                    newSolution.addFromStopName(database_functions.get_stop_name_by_id(newElement[0]["from-stop-partial"]["stop_id"]))
+                                    newSolution.addToStopName(database_functions.get_stop_name_by_id(newElement[-1]["to-stop-partial"]["stop_id"]))
                                     database_functions.upload_solution(newSolution.to_dictionary())
                                     solutionGenerated.add(baseStop.get_header())
                                     solutionGenerated.add((newElement[0]["from-stop-partial"]["stop_id"], newElement[-1]["to-stop-partial"]["stop_id"]))

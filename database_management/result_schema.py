@@ -8,9 +8,17 @@ result_schema = {
                 "bsonType" : "int",
                 "description" : "The stop-id of the starting stop"
             },
+            "from-name" : {
+                "bsonType" : "string",
+                "description" : "The name of the starting stop"
+            },
             "to-id" : {
                 "bsonType" : "int",
                 "description" : "The stop-id of the final stop"
+            },
+            "to-name" : {
+                "bsonType" : "string",
+                "description" : "The name of the final stop"
             },
             "changes" : {
                 "bsonType" : "array",
@@ -27,6 +35,9 @@ result_schema = {
                                 "properties" : {
                                     "stop_id": {
                                         "bsonType": "int"
+                                    },
+                                    "stop-name": {
+                                        "bsonType": "string"
                                     },
                                     "stop-time": {
                                         "bsonType": "object",
@@ -50,6 +61,9 @@ result_schema = {
                                     "stop_id": {
                                         "bsonType": "int"
                                     },
+                                    "stop-name": {
+                                        "bsonType": "string"
+                                    },
                                     "stop-time": {
                                         "bsonType": "object",
                                         "properties":{
@@ -69,7 +83,10 @@ result_schema = {
                                 },
                                 "route-id" : {
                                 "bsonType" : "int"
-                            }
+                                 },
+                                "route-name" : {
+                                "bsonType" : "string"
+                                },
                         }
                     }
                 }

@@ -337,3 +337,11 @@ def get_solutions_with_siblings(siblings: list):
         for change_set in pair:
                 candidates.append(change_set)
     return candidates
+
+def get_stop_name_by_id(gtfs_id: int):
+    return database[NODES_COLLECTION].find_one({"gtfs-id": gtfs_id},
+                                               {"_id": 0, "name": 1})["name"]
+    
+def get_route_name_by_id(route_id: int):
+    return database[ROUTES_COLLECTION].find_one({"route-id": route_id},
+                                                {"_id": 0, "route-short-name": 1})["route-short-name"]
