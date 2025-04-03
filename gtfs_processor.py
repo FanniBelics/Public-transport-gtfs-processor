@@ -65,9 +65,17 @@ def passesCriteria(candidate: list[dict]) -> bool:
     if(not isTimingCorrect(candidate)):
         return False
     
-    if(calculate_complete_time(candidate[0]["from-stop-partial"]["stop-time"], candidate[-1]["to-stop-partial"]["stop-time"]) > 
-       calculate_walking_time((fromNode.latitude, fromNode.longitude), (toNode.latitude, toNode.longitude))*2):
+    walking_time = calculate_walking_time((fromNode.latitude, fromNode.longitude), 
+                                        (toNode.latitude, toNode.longitude))
+    if walking_time > 15:  # If walking is longer than 15 minutes, allow a less strict rule
+        speed_factor = 1.2  
+    else:
+        speed_factor = 1.5  
+
+    if calculate_complete_time(candidate[0]["from-stop-partial"]["stop-time"], 
+                            candidate[-1]["to-stop-partial"]["stop-time"]) > walking_time * speed_factor:
         return False
+
     
     routesAppeared = [stop['route-id'] for stop in candidate]
     if(len(set(routesAppeared)) < len(routesAppeared)):
